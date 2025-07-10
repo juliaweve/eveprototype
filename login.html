@@ -1,0 +1,49 @@
+<!-- login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EVE Login</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body{background:radial-gradient(ellipse at top,#71428A 0%,#0A0A0A 100%,#000 100%);}
+  .panel{background:rgba(255,255,255,.07);backdrop-filter:blur(40px);}
+</style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 text-white">
+  <div class="flex flex-col items-center gap-6 w-full max-w-sm">
+    <img src="download.png" alt="EVE" class="h-56 w-auto">
+    <h1 class="text-3xl font-semibold text-center">Hello, I'm EVE!</h1>
+    <p class="text-xl text-center">
+      I'm your <span class="font-bold bg-clip-text text-transparent bg-gradient-to-t from-[#FFD700] to-[#FF6347]">business co-pilot</span> –
+      I manage your emails and calendars, find missed revenue in your inbox, and notify you so nothing slips through the cracks.
+    </p>
+
+    <div class="panel rounded-2xl px-8 py-6 w-full">
+      <p class="text-lg font-medium text-center mb-6">
+        Let's get to know each other and get things done.
+      </p>
+
+      <!-- buttons stacked exactly as original -->
+      <div class="grid gap-4">
+        <a href="setup.html"
+           class="w-full h-14 flex items-center justify-center gap-2 rounded-2xl bg-white/10 hover:bg-white/20">
+          <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="google">
+          <span class="font-medium">Join with Google</span>
+        </a>
+
+        <a href="setup.html"
+           class="w-full h-14 flex items-center justify-center gap-2 rounded-2xl bg-white/10 hover:bg-white/20">
+          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/microsoft.svg"
+               class="w-5 h-5 invert" alt="microsoft">
+          <span class="font-medium">Join with Microsoft</span>
+        </a>
+      </div>
+    </div>
+
+    <a href="https://www.joineve.ai/privacy-policy" target="_blank"
+       class="text-white/60 underline text-xs">Privacy Policy</a>
+  </div>
+</body>
+</html>

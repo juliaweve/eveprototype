@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Company Setup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body{background:radial-gradient(ellipse at top,#71428A 0%,#0A0A0A 90%,#000 100%);}
+  .chat{background:rgba(255,255,255,.08);}
+  .panel{background:rgba(255,255,255,.07);backdrop-filter:blur(40px);}
+  input,textarea{background:rgba(255,255,255,.05);}
+</style>
+</head>
+<body class="min-h-screen flex items-start justify-center pt-20 text-white">
+
+  <div class="w-full max-w-lg space-y-6">
+    <!-- Greeting balloons -->
+    <div class="flex items-start gap-3">
+      <img src="download.png" alt="EVE" class="h-6 w-auto">
+      <div class="space-y-2">
+        <div class="chat rounded-xl px-4 py-2 text-sm">It’s nice to meet you, John. Let’s get to know each other!</div>
+        <div class="chat rounded-xl px-4 py-2 text-sm">Let’s get you set up.</div>
+      </div>
+    </div>
+
+    <!-- Setup form -->
+    <form id="setupForm" class="panel rounded-2xl p-8 space-y-6">
+      <div>
+        <label class="block text-sm mb-2">Company Name <span class="text-red-500">*</span></label>
+        <input id="companyName" type="text" required placeholder="EVE AI" class="w-full rounded-lg px-4 py-3 text-sm outline-none">
+      </div>
+
+      <div>
+        <label class="block text-sm mb-2">Company URL <span class="text-red-500">*</span></label>
+        <input id="companyURL" type="text" required placeholder="joineve.ai" class="w-full rounded-lg px-4 py-3 text-sm outline-none">
+      </div>
+
+      <div>
+        <label class="block text-sm mb-2">Ideal Customer Profile</label>
+        <textarea rows="5" class="w-full rounded-lg px-4 py-3 text-sm outline-none"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-sm mb-2">Your Role</label>
+        <input type="text" placeholder="Product Manager" class="w-full rounded-lg px-4 py-3 text-sm outline-none">
+      </div>
+
+      <button type="submit" class="w-full h-12 mt-2 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center gap-2">
+        Continue
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+      </button>
+    </form>
+  </div>
+
+<script>
+/* Store company data and redirect */
+document.getElementById('setupForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const name = document.getElementById('companyName').value.trim();
+  const url  = document.getElementById('companyURL').value.trim();
+  localStorage.setItem('eve_company', name);
+  localStorage.setItem('eve_url', url);
+  window.location.href = 'report.html';   // next page
+});
+</script>
+
+</body>
+</html>
