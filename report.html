@@ -63,7 +63,22 @@ body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,
 .btn{padding:7px 14px;font-size:13px;border-radius:7px;border:none;cursor:pointer}
 .btn-primary{background:#C026D3;color:#fff}
 .btn-secondary{background:rgba(255,255,255,.10);color:#F4F4F5}
+.inner{position:relative!important}
+.rev-chip{display:inline-flex;align-items:center;gap:6px;
+          background:rgba(255,255,255,.12);padding:3px 9px;
+          border-radius:8px;font-size:12px;margin-left:8px}
+.rev-chip.high{background:rgba(220,38,38,.25)}
 
+/* tooltip genérico */
+.tooltip{position:relative}
+.tooltip:hover::after{
+  content:attr(data-tip);
+  position:absolute;left:50%;bottom:110%;
+  transform:translateX(-50%);
+  background:#000;padding:4px 8px;border-radius:6px;
+  font-size:11px;color:#fff;white-space:nowrap;
+  pointer-events:none
+}
 /* ——— company chip ——— */
 .company-chip{background:rgba(255,255,255,.12);padding:3px 7px;border-radius:6px;font-size:12px;margin-left:8px}
 
@@ -150,7 +165,7 @@ body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,
           <div class="card-actions"><button class="btn btn-primary action-btn">Create Draft</button></div>
         </div>
 
-        <div class="task-card" data-status="new" data-client="caramelis" data-user="ace">
+        <div class="task-card" data-status="new" data-client="redcorp" data-user="ace">
           <div class="inner">
             <div class="card-top"><div>○ Schedule Demo with CFO</div><span class="text-xs text-white/70">Yesterday</span></div>
             <div class="card-tags"><span class="tag-grey">Ace</span><span class="tag-hot">Hot Prospect</span></div>
@@ -233,6 +248,7 @@ body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,
 const COMPANY = localStorage.getItem('eve_company')||'Your Company';
 const SITE_URL= localStorage.getItem('eve_url')||'your-company.com';
 const domain  = SITE_URL.replace(/^https?:\/\/?/i,'').split('/')[0];
+const revenue={caramelis:103,netfred:120,redcorp:240,fitxpress:60,microfint:100,alohello:0,boots:0};
 
 const tasks=[...document.querySelectorAll('.task-card')],
       statusBtns=[...document.querySelectorAll('.status-item')],
@@ -249,18 +265,29 @@ const tasks=[...document.querySelectorAll('.task-card')],
 let currentStatus='new', awaitingDraftConfirm=false, awaitingDraftClient='';
 
 /* ——— add company chips ——— */
-tasks.forEach(card=>{
-  const client=card.dataset.client[0].toUpperCase()+card.dataset.client.slice(1);
-  const titleEl=card.querySelector('.card-top div');
-  titleEl.style.display='flex';
-  titleEl.style.alignItems='center';
-  titleEl.style.gap='8px';
-  const chip=document.createElement('span');
-  chip.className='company-chip';
-  chip.textContent=client;
-  titleEl.appendChild(chip);
-});
 
+
+tasks.forEach(card=>{
+  const client=card.dataset.client;
+
+  /* company */
+  const title=card.querySelector('.card-top div');
+  const comp=document.createElement('span');
+  comp.className='company-chip';                      
+  comp.textContent=`Company ${client[0].toUpperCase()+client.slice(1)}`;
+  title.appendChild(comp);
+
+  /* revenue */
+  const val=revenue[client]??0;
+  const rev=document.createElement('span');
+  rev.className='rev-chip '+(val>85?' high':'');
+  rev.textContent=`Potential Revenue $${val}k`;
+  title.appendChild(rev);
+
+  /* user tooltip */
+  card.querySelectorAll('.card-tags .tag-grey')
+      .forEach(t=>{t.classList.add('tooltip');t.dataset.tip='User Responsible';});
+});
 /* ——— helper builders ——— */
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]/g,'');
 const genEmail=c=>`${slug(c)}@${slug(c)}.com`;
