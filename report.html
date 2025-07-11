@@ -332,14 +332,14 @@ let showingActionButtons = false;
 
 // Autocomplete data
 const emailContacts = [
-  { name: 'John Smith', email: `john.smith@${domain}.com` },
-  { name: 'Sarah Johnson', email: `sarah.johnson@${domain}.com` },
-  { name: 'Mike Davis', email: `mike.davis@${domain}.com` },
-  { name: 'Lisa Chen', email: `lisa.chen@${domain}.com` },
-  { name: 'David Wilson', email: `david.wilson@${domain}.com` },
-  { name: 'Emily Brown', email: `emily.brown@${domain}.com` },
-  { name: 'Chris Taylor', email: `chris.taylor@${domain}.com` },
-  { name: 'Amanda White', email: `amanda.white@${domain}.com` }
+  { name: 'John Smith', email: `john.smith@${domain.split('.')[0]}.com` },
+  { name: 'Sarah Johnson', email: `sarah.johnson@${domain.split('.')[0]}.com` },
+  { name: 'Mike Davis', email: `mike.davis@${domain.split('.')[0]}.com` },
+  { name: 'Lisa Chen', email: `lisa.chen@${domain.split('.')[0]}.com` },
+  { name: 'David Wilson', email: `david.wilson@${domain.split('.')[0]}.com` },
+  { name: 'Emily Brown', email: `emily.brown@${domain.split('.')[0]}.com` },
+  { name: 'Chris Taylor', email: `chris.taylor@${domain.split('.')[0]}.com` },
+  { name: 'Amanda White', email: `amanda.white@${domain.split('.')[0]}.com` }
 ];
 
 let autocompleteVisible = false;
@@ -379,7 +379,7 @@ tasks.forEach(card => {
 /* ——— helper builders ——— */
 const slug = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 const genEmail = c => `${slug(c)}@${slug(c)}.com`;
-const fromEmail = `john@${domain}`;
+const fromEmail = `john@${domain.split('.')[0]}.com`;
 const bubble = t => {
   const d = document.createElement('div');
   d.className = 'p-4 text-fuchsia-200 text-sm bg-white/5 rounded-tl-xl rounded-tr-xl rounded-br-xl rounded-bl-sm inline-block self-end';
@@ -904,10 +904,17 @@ function updateAutocompleteSelection() {
 function isAtSymbolAlone(text, position) {
   // Check if @ is at the beginning or preceded by whitespace
   const beforeChar = position > 0 ? text[position - 1] : ' ';
-  // Check if @ is at the end or followed by whitespace
-  const afterChar = position < text.length - 1 ? text[position + 1] : ' ';
   
-  return /\s/.test(beforeChar) && (/\s/.test(afterChar) || position === text.length - 1);
+  // Check what comes after @
+  const afterText = text.substring(position + 1);
+  
+  // If there's already text after @ that looks like an email domain, don't trigger autocomplete
+  if (afterText && /^[a-zA-Z0-9.-]+/.test(afterText)) {
+    return false;
+  }
+  
+  // Only trigger if @ is preceded by whitespace and not part of an email
+  return /\s/.test(beforeChar) && (afterText === '' || /^\s/.test(afterText));
 }
 
 /* ——— chat send ——— */
