@@ -4,6 +4,13 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Eve AI Prototype</title>
+<script>
+// Update title with company name if available
+const companyName = localStorage.getItem('eve_company');
+if (companyName) {
+  document.title = `${companyName} - Eve AI`;
+}
+</script>
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
@@ -11,8 +18,8 @@
 
 /* ——— base layout ——— */
 body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,#0A0A0A 90%,#000);color:#F4F4F5;font-family:Inter,sans-serif;overflow:hidden}
-.wrapper{margin-left:56px;padding:24px 24px 200px;height:100%;display:flex;justify-content:center}
-.column{width:100%;max-width:var(--w);display:flex;flex-direction:column;height:100%}
+.wrapper{margin-left:56px;padding:24px 24px 140px;height:100vh;display:flex;justify-content:center;overflow:hidden}
+.column{width:100%;max-width:var(--w);display:flex;flex-direction:column;height:100vh;justify-content:flex-start}
 
 /* ——— sidebar ——— */
 .sidebar{position:fixed;inset:0 auto 0 0;width:56px;background:#18181B;display:flex;flex-direction:column;justify-content:space-between;align-items:center}
@@ -45,14 +52,19 @@ body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,
 .status-item::before{content:"○"}
 .status-item span{padding:3px 8px;border-radius:6px;font-size:12px;background:rgba(255,255,255,.10)}
 .status-item.active{background:rgba(255,255,255,.12);border-radius:12px;padding:8px 20px}
-#backBtn{margin-bottom:24px}
+#backBtn{margin-bottom:24px;padding:7px 10px;font-size:13px;width:70px}
 
 /* ——— scroll zone ——— */
-.content-area{overflow-y:auto;flex:1 1 0;scrollbar-width:none}
+.content-area{overflow-y:auto;flex:1;scrollbar-width:none;min-height:0;padding-bottom:20px;display:flex;flex-direction:column}
 .content-area::-webkit-scrollbar{display:none}
 
+/* ——— chat area ——— */
+.chat-container{display:flex;flex-direction:column;height:100vh;position:relative}
+.chat-messages{overflow-y:auto;flex:1;scrollbar-width:none;padding:20px 0;max-height:calc(100vh - 300px)}
+.chat-messages::-webkit-scrollbar{display:none}
+
 /* ——— task card ——— */
-.task-card{background:#4c3a58;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:16px}
+.task-card{background:#4c3a58;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:16px;position:relative}
 .inner{background:#5b4767;border-radius:10px;padding:24px;display:flex;flex-direction:column;gap:16px}
 .card-top{display:flex;justify-content:space-between;font-size:15px}
 .card-tags{display:flex;gap:8px;font-size:13px}
@@ -63,6 +75,7 @@ body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,
 .btn{padding:7px 14px;font-size:13px;border-radius:7px;border:none;cursor:pointer}
 .btn-primary{background:#C026D3;color:#fff}
 .btn-secondary{background:rgba(255,255,255,.10);color:#F4F4F5}
+.btn-transparent{background:transparent;color:#F4F4F5;border:1px solid rgba(255,255,255,.3)}
 .inner{position:relative!important}
 .rev-chip{display:inline-flex;align-items:center;gap:6px;
           background:rgba(255,255,255,.12);padding:3px 9px;
@@ -79,21 +92,42 @@ body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,
   font-size:11px;color:#fff;white-space:nowrap;
   pointer-events:none
 }
+
 /* ——— company chip ——— */
 .company-chip{background:rgba(255,255,255,.12);padding:3px 7px;border-radius:6px;font-size:12px;margin-left:8px}
 
+/* ——— card bottom elements ——— */
+.card-icon{position:absolute;top:38px;right:24px;width:20px;height:20px;cursor:pointer;opacity:0.7;transition:opacity 0.2s}
+.card-icon:hover{opacity:1}
+.card-date{font-size:12px;color:#A1A1AA;position:absolute;bottom:16px;right:16px}
+
 /* ——— chat thread ——— */
-.chat-thread{display:flex;flex-direction:column;gap:20px;margin-top:40px}
+.chat-thread{display:flex;flex-direction:column;flex:1;min-height:0;max-height:calc(100vh - 380px)}
+.chat-messages{overflow-y:auto;flex:1;scrollbar-width:none;padding:15px 0 60px 0;display:flex;flex-direction:column;gap:20px;max-height:calc(100vh - 440px);min-height:280px}
+.chat-messages::-webkit-scrollbar{display:none}
 .msg-ai{align-self:flex-start;font-size:15px;max-width:85%}
 .typing{align-self:flex-start;font-size:28px;letter-spacing:3px}
 @keyframes bl{0%{opacity:.25}50%{opacity:1}100%{opacity:.25}}
 .typing span{animation:bl 1s infinite}
+
+/* ——— action buttons ——— */
+.action-buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.action-buttons .btn{padding:7px 14px;font-size:13px;width:auto;text-align:center}
 
 /* ——— input ——— */
 .chat-box{position:fixed;left:56px;right:0;bottom:28px;margin:0 auto;width:var(--w);height:110px;background:#464646;border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:10px 20px}
 .chat-input{width:100%;height:100%;background:transparent;border:none;color:#fff;font-size:17px;padding-bottom:42px;outline:none}
 .chat-input::placeholder{color:rgba(255,255,255,.6)}
 .hint{position:absolute;left:24px;bottom:10px;font-size:12px;color:#d4d4d4}
+
+/* ——— autocomplete dropdown ——— */
+.autocomplete-dropdown{position:absolute;bottom:120px;left:20px;right:20px;background:#2a2a2a;border:1px solid rgba(255,255,255,.3);border-radius:8px;max-height:200px;overflow-y:auto;z-index:1000;display:none;scrollbar-width:none}
+.autocomplete-dropdown::-webkit-scrollbar{display:none}
+.autocomplete-item{padding:10px 15px;cursor:pointer;font-size:14px;color:#F4F4F5;border-bottom:1px solid rgba(255,255,255,.1)}
+.autocomplete-item:last-child{border-bottom:none}
+.autocomplete-item:hover,.autocomplete-item.selected{background:rgba(255,255,255,.1)}
+.autocomplete-item .email{font-weight:500}
+.autocomplete-item .name{font-size:12px;color:#A1A1AA;margin-top:2px}
 
 /* ——— util ——— */
 .hidden{display:none!important}
@@ -117,8 +151,8 @@ body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,
   <div class="column">
 
     <!-- HEADER -->
-    <div class="title-bar">
-      <h1 class="text-3xl font-semibold">Tasks</h1>
+    <div id="headerSection" class="title-bar">
+      <h1 id="pageTitle" class="text-3xl font-semibold">Tasks</h1>
       <div class="filters">
         <button id="clientBtn" class="pill">Clients ▾</button>
         <div id="clientDrop" class="dropdown hidden">
@@ -146,7 +180,7 @@ body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,
       <button class="status-item active" data-status="new">New <span>2</span></button>
       <button class="status-item" data-status="progress">In Progress <span>1</span></button>
       <button class="status-item" data-status="done">Done <span>3</span></button>
-      <button class="status-item" data-status="cancel">Cancelled <span>2</span></button>
+      <button class="status-item" data-status="cancel">Cancelled <span>1</span></button>
     </div>
 
     <button id="backBtn" class="pill hidden">← Back</button>
@@ -158,234 +192,1097 @@ body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,
         <!-- NEW -->
         <div class="task-card" data-status="new" data-client="caramelis" data-user="boots">
           <div class="inner">
-            <div class="card-top"><div>○ Send 2-week Caramelis Demo</div><span class="text-xs text-white/70">Today</span></div>
+            <div class="card-top"><div>○ Send 2-week Caramelis Demo</div></div>
             <div class="card-tags"><span class="tag-grey">Boots</span><span class="tag-hot">Hot Prospect</span></div>
             <p class="card-desc">Set up demo environment and email credentials to Caramelis users.</p>
           </div>
           <div class="card-actions"><button class="btn btn-primary action-btn">Create Draft</button></div>
+          <img src="icon.png" class="card-icon" alt="">
+          <span class="card-date">Today</span>
         </div>
 
         <div class="task-card" data-status="new" data-client="redcorp" data-user="ace">
           <div class="inner">
-            <div class="card-top"><div>○ Schedule Demo with CFO</div><span class="text-xs text-white/70">Yesterday</span></div>
+            <div class="card-top"><div>○ Schedule Demo with CFO</div></div>
             <div class="card-tags"><span class="tag-grey">Ace</span><span class="tag-hot">Hot Prospect</span></div>
             <p class="card-desc">Arrange a product demo with the CFO and Head of Product next week.</p>
           </div>
           <div class="card-actions"><button class="btn btn-primary action-btn">Propose Meeting</button></div>
+          <img src="icon.png" class="card-icon" alt="">
+          <span class="card-date">Yesterday</span>
         </div>
 
         <!-- IN PROGRESS -->
         <div class="task-card" data-status="progress" data-client="netfred" data-user="corp">
           <div class="inner">
-            <div class="card-top"><div>○ Ongoing Product Walkthrough</div><span class="text-xs text-white/70">Due Tomorrow</span></div>
+            <div class="card-top"><div>○ Ongoing Product Walkthrough</div></div>
             <div class="card-tags"><span class="tag-grey">Corp</span></div>
             <p class="card-desc">Coordinate walkthrough with client stakeholders and finalize materials.</p>
           </div>
           <div class="card-actions"><button class="btn btn-secondary">Update</button></div>
+          <img src="icon.png" class="card-icon" alt="">
+          <span class="card-date">Due Tomorrow</span>
         </div>
 
         <!-- DONE -->
         <div class="task-card" data-status="done" data-client="redcorp" data-user="boots">
           <div class="inner">
-            <div class="card-top"><div>○ Close Deal with RedCorp</div><span class="text-xs text-white/70">Jun 9</span></div>
+            <div class="card-top"><div>○ Close Deal with RedCorp</div></div>
             <div class="card-tags"><span class="tag-grey">Boots</span></div>
             <p class="card-desc">Contract signed and onboarding started.</p>
           </div>
           <div class="card-actions"><button class="btn btn-secondary">See Details</button></div>
+          <img src="icon.png" class="card-icon" alt="">
+          <span class="card-date">Jun 9</span>
         </div>
 
         <div class="task-card" data-status="done" data-client="fitxpress" data-user="ace">
           <div class="inner">
-            <div class="card-top"><div>○ Finished Task 2</div><span class="text-xs text-white/70">Jun 8</span></div>
+            <div class="card-top"><div>○ Finished Task 2</div></div>
             <div class="card-tags"><span class="tag-grey">Ace</span></div>
             <p class="card-desc">Completed background reporting.</p>
           </div>
           <div class="card-actions"><button class="btn btn-secondary">See Details</button></div>
+          <img src="icon.png" class="card-icon" alt="">
+          <span class="card-date">Jun 8</span>
         </div>
 
         <div class="task-card" data-status="done" data-client="microfint" data-user="corp">
           <div class="inner">
-            <div class="card-top"><div>○ Confirm Venue for Seminar</div><span class="text-xs text-white/70">Jun 7</span></div>
+            <div class="card-top"><div>○ Confirm Venue for Seminar</div></div>
             <div class="card-tags"><span class="tag-grey">Corp</span></div>
             <p class="card-desc">Venue locked for August seminar.</p>
           </div>
           <div class="card-actions"><button class="btn btn-secondary">See Details</button></div>
+          <img src="icon.png" class="card-icon" alt="">
+          <span class="card-date">Jun 7</span>
         </div>
 
         <!-- CANCELLED -->
         <div class="task-card" data-status="cancel" data-client="alohello" data-user="ace">
           <div class="inner">
-            <div class="card-top"><div>○ Prospect Withdrawal</div><span class="text-xs text-white/70">Jun 6</span></div>
+            <div class="card-top"><div>○ Prospect Withdrawal</div></div>
             <div class="card-tags"><span class="tag-grey">Ace</span></div>
             <p class="card-desc">Client withdrew interest after negotiations.</p>
           </div>
           <div class="card-actions"><button class="btn btn-secondary">Reason</button></div>
+          <img src="icon.png" class="card-icon" alt="">
+          <span class="card-date">Jun 6</span>
         </div>
 
         <div class="task-card" data-status="cancel" data-client="boots" data-user="boots">
           <div class="inner">
-            <div class="card-top"><div>○ Cancel Internal Audit</div><span class="text-xs text-white/70">Jun 5</span></div>
+            <div class="card-top"><div>○ Cancel Internal Audit</div></div>
             <div class="card-tags"><span class="tag-grey">Boots</span></div>
             <p class="card-desc">Audit postponed due to resource constraints.</p>
           </div>
           <div class="card-actions"><button class="btn btn-secondary">Reason</button></div>
+          <img src="icon.png" class="card-icon" alt="">
+          <span class="card-date">Jun 5</span>
         </div>
       </div>
 
-      <div id="chatThread" class="chat-thread hidden"></div>
+      <div id="chatThread" class="chat-thread hidden">
+        <div class="chat-messages"></div>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- CHAT INPUT -->
 <div class="chat-box">
-  <input id="chatInput" class="chat-input" type="text" placeholder="Type @ to mention someone or / to use commands…">
-  <span class="hint">Shift + enter a new line</span>
+  <div id="autocompleteDropdown" class="autocomplete-dropdown"></div>
+  <input id="chatInput" class="chat-input" type="text" placeholder="Type @ to mention someone…">
 </div>
 
 <script>
 /* ——— company & refs ——— */
-const COMPANY = localStorage.getItem('eve_company')||'Your Company';
-const SITE_URL= localStorage.getItem('eve_url')||'your-company.com';
-const domain  = SITE_URL.replace(/^https?:\/\/?/i,'').split('/')[0];
-const revenue={caramelis:103,netfred:120,redcorp:240,fitxpress:60,microfint:100,alohello:0,boots:0};
+// Get company data from setup or use fallbacks
+const COMPANY = localStorage.getItem('eve_company') || 'Your Company';
+const SITE_URL = localStorage.getItem('eve_url') || 'your-company.com';
+const domain = SITE_URL.replace(/^https?:\/\/?/i,'').split('/')[0];
+const revenue = {caramelis:103,netfred:120,redcorp:240,fitxpress:60,microfint:100,alohello:0,boots:0};
 
-const tasks=[...document.querySelectorAll('.task-card')],
-      statusBtns=[...document.querySelectorAll('.status-item')],
-      clientBtn=document.getElementById('clientBtn'),clientDrop=document.getElementById('clientDrop'),
-      userBtn=document.getElementById('userBtn'),userDrop=document.getElementById('userDrop'),
-      backBtn=document.getElementById('backBtn'),
-      chatThread=document.getElementById('chatThread'),
-      chatInput=document.getElementById('chatInput'),
-      tasksBox=document.getElementById('tasks'),
-      statusBar=document.getElementById('statusBar'),
-      filtersEl=document.querySelector('.filters'),
-      avatarImg=document.getElementById('avatarImg'),avatarMenu=document.getElementById('avatarMenu');
+const tasks = [...document.querySelectorAll('.task-card')];
+const statusBtns = [...document.querySelectorAll('.status-item')];
+const clientBtn = document.getElementById('clientBtn');
+const clientDrop = document.getElementById('clientDrop');
+const userBtn = document.getElementById('userBtn');
+const userDrop = document.getElementById('userDrop');
+const backBtn = document.getElementById('backBtn');
+const chatThread = document.getElementById('chatThread');
+const chatMessages = document.querySelector('.chat-messages');
+const chatInput = document.getElementById('chatInput');
+const autocompleteDropdown = document.getElementById('autocompleteDropdown');
+const tasksBox = document.getElementById('tasks');
+const statusBar = document.getElementById('statusBar');
+const headerSection = document.getElementById('headerSection');
+const filtersEl = document.querySelector('.filters');
+const avatarImg = document.getElementById('avatarImg');
+const avatarMenu = document.getElementById('avatarMenu');
 
-let currentStatus='new', awaitingDraftConfirm=false, awaitingDraftClient='';
+let currentStatus = 'new';
+let awaitingDraftConfirm = false;
+let awaitingDraftClient = '';
+let awaitingDraftEdit = false;
+let awaitingDraftEditType = '';
+let draftDetails = {};
+let currentCard = null;
+let showingActionButtons = false;
+
+// Autocomplete data
+const emailContacts = [
+  { name: 'John Smith', email: `john.smith@${domain}.com` },
+  { name: 'Sarah Johnson', email: `sarah.johnson@${domain}.com` },
+  { name: 'Mike Davis', email: `mike.davis@${domain}.com` },
+  { name: 'Lisa Chen', email: `lisa.chen@${domain}.com` },
+  { name: 'David Wilson', email: `david.wilson@${domain}.com` },
+  { name: 'Emily Brown', email: `emily.brown@${domain}.com` },
+  { name: 'Chris Taylor', email: `chris.taylor@${domain}.com` },
+  { name: 'Amanda White', email: `amanda.white@${domain}.com` }
+];
+
+let autocompleteVisible = false;
+let selectedAutocompleteIndex = -1;
+let atSymbolPosition = -1;
+
+/* ——— Update page with company data ——— */
+// Update page title if company name exists
+const pageTitle = document.getElementById('pageTitle');
+if (COMPANY !== 'Your Company') {
+  pageTitle.textContent = `Tasks`;
+}
 
 /* ——— add company chips ——— */
-
-
-tasks.forEach(card=>{
-  const client=card.dataset.client;
+tasks.forEach(card => {
+  const client = card.dataset.client;
 
   /* company */
-  const title=card.querySelector('.card-top div');
-  const comp=document.createElement('span');
-  comp.className='company-chip';                      
-  comp.textContent=`Company ${client[0].toUpperCase()+client.slice(1)}`;
+  const title = card.querySelector('.card-top div');
+  const comp = document.createElement('span');
+  comp.className = 'company-chip';                      
+  comp.textContent = `Company ${client[0].toUpperCase() + client.slice(1)}`;
   title.appendChild(comp);
 
   /* revenue */
-  const val=revenue[client]??0;
-  const rev=document.createElement('span');
-  rev.className='rev-chip '+(val>85?' high':'');
-  rev.textContent=`Potential Revenue $${val}k`;
+  const val = revenue[client] ?? 0;
+  const rev = document.createElement('span');
+  rev.className = 'rev-chip ' + (val > 85 ? ' high' : '');
+  rev.textContent = `Potential Revenue $${val}k`;
   title.appendChild(rev);
 
   /* user tooltip */
   card.querySelectorAll('.card-tags .tag-grey')
-      .forEach(t=>{t.classList.add('tooltip');t.dataset.tip='User Responsible';});
+      .forEach(t => {t.classList.add('tooltip'); t.dataset.tip = 'User Responsible';});
 });
+
 /* ——— helper builders ——— */
-const slug=s=>s.toLowerCase().replace(/[^a-z0-9]/g,'');
-const genEmail=c=>`${slug(c)}@${slug(c)}.com`;
-const fromEmail=`john@${domain}`;
-const bubble=t=>{const d=document.createElement('div');d.className='p-4 text-fuchsia-200 text-sm bg-white/5 rounded-tl-xl rounded-tr-xl rounded-br-xl rounded-bl-sm inline-block self-end';d.textContent=t;return d;}
-const aiBubble=h=>{const d=document.createElement('div');d.className='msg-ai';d.innerHTML=h;return d;}
-const typing=()=>{const t=document.createElement('div');t.className='typing';t.innerHTML='<span>•</span><span>•</span><span>•</span>';return t;}
-function appendAI(html){const el=aiBubble(html);chatThread.appendChild(el);el.scrollIntoView({behavior:'smooth'});}
+const slug = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+const genEmail = c => `${slug(c)}@${slug(c)}.com`;
+const fromEmail = `john@${domain}`;
+const bubble = t => {
+  const d = document.createElement('div');
+  d.className = 'p-4 text-fuchsia-200 text-sm bg-white/5 rounded-tl-xl rounded-tr-xl rounded-br-xl rounded-bl-sm inline-block self-end';
+  d.textContent = t;
+  return d;
+};
+const aiBubble = h => {
+  const d = document.createElement('div');
+  d.className = 'msg-ai';
+  d.innerHTML = h;
+  return d;
+};
+const typing = () => {
+  const t = document.createElement('div');
+  t.className = 'typing';
+  t.innerHTML = '<span>•</span><span>•</span><span>•</span>';
+  return t;
+};
+
+function appendAI(html) {
+  const el = aiBubble(html);
+  chatMessages.appendChild(el);
+  setTimeout(() => {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }, 100);
+}
+
+function createActionButtons(card) {
+  const actionType = card.querySelector('.action-btn')?.textContent || 'See Details';
+  const client = card.dataset.client.replace(/^\w/, m => m.toUpperCase());
+  
+  const buttons = document.createElement('div');
+  buttons.className = 'action-buttons';
+  
+  let primaryAction = '';
+  if (actionType.includes('Draft')) {
+    primaryAction = 'Draft Email';
+  } else if (actionType.includes('Propose') || actionType.includes('Meeting')) {
+    primaryAction = 'Propose Meeting';
+  } else {
+    primaryAction = 'See Details';
+  }
+  
+  buttons.innerHTML = `
+    <button class="btn btn-primary task-action-btn" data-action="${primaryAction.toLowerCase().replace(' ', '-')}">${primaryAction}</button>
+    <button class="btn btn-transparent task-action-btn" data-action="send-default">Send Default Email</button>
+    <button class="btn btn-transparent task-action-btn" data-action="ignore">Ignore</button>
+    <button class="btn btn-transparent task-action-btn" data-action="see-details">See Details</button>
+  `;
+  
+  return buttons;
+}
 
 /* ——— AI messages ——— */
-function draftConfirm(c){return`I'll create a draft email to <strong>${genEmail(c)}</strong> for you. Since you'd like me to create the subject and message, let me confirm the details before proceeding:<br><br><b>Email Details to Confirm:</b><br><br><strong>To:</strong> ${genEmail(c)}<br><strong>Subject:</strong> I'll create a general subject line<br><strong>Message:</strong> I'll create a professional introductory message<br><strong>CC:</strong> None<br><strong>From:</strong> ${fromEmail}<br><br><strong>Proposed Subject:</strong> "Hello from ${COMPANY}"<br><br><strong>Proposed Message:</strong><br>Hi there,<br><br>I hope you're doing well. It's John reaching out to set up demo environment and email credentials to ${c} users!<br><br>Looking forward to hearing from you.<br><br>Does this look good? Reply <em>Yes</em> to send or <em>No</em> to adjust.`;}
-const draftSent=c=>`Perfect! I'll send the meeting invitation email now with the confirmed details:<br><br><b>Confirming the email details before sending:</b><br><strong>To:</strong> ${genEmail(c)}<br><strong>Subject:</strong> Meeting Request - Demo Environment<br><strong>Body:</strong> General meeting request for 30-minute connection and collaboration discussion<br><br>✅ Email sent successfully!<br>The invitation has been sent to ${genEmail(c)} with the subject "Meeting Request - Demo Environment".<br><br><u>The email includes</u>:<br>• A request for a 30-minute meeting<br>• Flexible timing for next week<br>• Request for their availability<br>• Professional introduction as your virtual assistant<br><br>`;
-const draftAdjust=()=>`Oh no! So let's improve this draft. What information would you like me to change?`;
-function meetingPrompt(c){return`I'll help you schedule a meeting with <strong>${c}</strong>. Let me first get the current time and then gather the necessary details.<br><br>I can help you schedule this meeting in two ways:<br>• <b>Direct booking</b>: I can directly book a calendar event if you have a specific time in mind<br>• <b>Email invitation</b>: I can start an email thread with ${genEmail(c)} to discuss and find a suitable time<br><br>Which approach would you prefer?<br><br>Also, please let me know:<br>• What's the purpose/topic of this meeting?<br>• How long should the meeting be? (e.g., 30 minutes, 1 hour)<br>• Any preferred timeframe or specific dates you have in mind?<br><br>This will help me suggest the best available slots or create an appropriate meeting invitation.`;}
-const marketingMsg=`Hey – this is <strong>EVE</strong>. EVE is an AI RevOps for SMBs that uncovers missed revenue hiding in email data. It analyzes inboxes to surface forgotten leads, stalled deals, and upsell signals – then recommends smart, personalized next steps with deep business context so lean teams can act fast and close more without changing how they work.`;
+function draftConfirm(c, customDetails = null) {
+  const details = customDetails || {
+    to: genEmail(c),
+    subject: `Hello from ${COMPANY}`,
+    message: `Hi there,\n\nI hope you're doing well. It's John reaching out to set up demo environment and email credentials to ${c} users!\n\nLooking forward to hearing from you.`
+  };
+  
+  draftDetails = details; // Store for potential edits
+  
+  return `I'll create a draft email to <strong>${details.to}</strong> for you. Since you'd like me to create the subject and message, let me confirm the details before proceeding:<br><br><b>Email Details to Confirm:</b><br><br><strong>To:</strong> ${details.to}<br><strong>Subject:</strong> ${details.subject}<br><strong>Message:</strong> ${details.message.replace(/\n/g, '<br>')}<br><strong>CC:</strong> None<br><strong>From:</strong> ${fromEmail}<br><br>Do you confirm this information and want to send the email?`;
+}
+
+const draftSent = (c) => {
+  const details = draftDetails.to ? draftDetails : {
+    to: genEmail(c),
+    subject: `Hello from ${COMPANY}`,
+    message: `Hi there,\n\nI hope you're doing well. It's John reaching out to set up demo environment and email credentials to ${c} users!\n\nLooking forward to hearing from you.`
+  };
+  
+  return `Perfect! I'll send the meeting invitation email now with the confirmed details:<br><br><b>Confirming the email details before sending:</b><br><strong>To:</strong> ${details.to}<br><strong>Subject:</strong> ${details.subject}<br><strong>Body:</strong> ${details.message.replace(/\n/g, '<br>')}<br><br>✅ Email sent successfully!<br>The invitation has been sent to ${details.to} with the subject "${details.subject}".<br><br><u>The email includes</u>:<br>• The customized message content<br>• Professional communication<br>• Clear next steps<br>• Your contact information<br><br>`;
+};
+
+const draftAdjust = () => `Oh no! So let's improve this draft. What information would you like me to change?`;
+
+function meetingPrompt(c) {
+  return `I'll help you schedule a meeting with <strong>${c}</strong>. Let me first get the current time and then gather the necessary details.<br><br>I can help you schedule this meeting in two ways:<br>• <b>Direct booking</b>: I can directly book a calendar event if you have a specific time in mind<br>• <b>Email invitation</b>: I can start an email thread with ${genEmail(c)} to discuss and find a suitable time<br><br>Which approach would you prefer?<br><br>Also, please let me know:<br>• What's the purpose/topic of this meeting?<br>• How long should the meeting be? (e.g., 30 minutes, 1 hour)<br>• Any preferred timeframe or specific dates you have in mind?<br><br>This will help me suggest the best available slots or create an appropriate meeting invitation.`;
+}
+
+const defaultEmailMsg = c => `I'll send a default template email to <strong>${genEmail(c)}</strong> right away.<br><br>✅ <b>Default Email Sent!</b><br><br><strong>To:</strong> ${genEmail(c)}<br><strong>Subject:</strong> Quick Follow-up<br><strong>Message:</strong> Standard follow-up template with general information about our services and next steps.<br><br>The email has been dispatched successfully. The recipient will receive our standard communication template within the next few minutes.`;
+
+const ignoreMsg = () => `Got it! I'll mark this task as ignored for now. The task will remain in your list but won't trigger any automated follow-ups or reminders.<br><br>📝 <b>Task Status:</b> Ignored<br><br>You can always come back to this task later if you change your mind. Just click on it again and I'll be ready to help with any actions you need.`;
+
+const seeDetailsMsg = (card) => {
+  const client = card.dataset.client.replace(/^\w/, m => m.toUpperCase());
+  const user = card.dataset.user.replace(/^\w/, m => m.toUpperCase());
+  const desc = card.querySelector('.card-desc').textContent;
+  const date = card.querySelector('.card-date').textContent;
+  
+  return `Here are the complete details for this task:<br><br><b>📋 Task Details:</b><br><br><strong>Client:</strong> ${client}<br><strong>Assigned User:</strong> ${user}<br><strong>Due Date:</strong> ${date}<br><strong>Description:</strong> ${desc}<br><br><strong>Current Status:</strong> ${currentStatus.replace(/^\w/, m => m.toUpperCase())}<br><strong>Potential Revenue:</strong> $${revenue[card.dataset.client] || 0}k<br><br>Would you like me to help you take any specific action on this task?`;
+};
+
+const marketingMsg = `Hey – this is <strong>EVE</strong>. EVE is an AI RevOps for SMBs that uncovers missed revenue hiding in email data. It analyzes inboxes to surface forgotten leads, stalled deals, and upsell signals – then recommends smart, personalized next steps with deep business context so lean teams can act fast and close more without changing how they work.`;
 
 /* ——— avatar dropdown ——— */
-avatarImg.onclick=e=>{e.stopPropagation();avatarMenu.style.display=avatarMenu.style.display==='block'?'none':'block';};
-document.addEventListener('click',e=>{if(!avatarMenu.contains(e.target)&&e.target!==avatarImg)avatarMenu.style.display='none';});
+avatarImg.onclick = e => {
+  e.stopPropagation();
+  avatarMenu.style.display = avatarMenu.style.display === 'block' ? 'none' : 'block';
+};
+document.addEventListener('click', e => {
+  if (!avatarMenu.contains(e.target) && e.target !== avatarImg) avatarMenu.style.display = 'none';
+});
 
 /* ——— dropdown positioning ——— */
-const placeDrop=(btn,drop)=>{const b=btn.getBoundingClientRect(),f=filtersEl.getBoundingClientRect();drop.style.left=(b.left-f.left)+'px';drop.style.top=(b.height+6)+'px';};
-clientBtn.onclick=e=>{e.stopPropagation();placeDrop(clientBtn,clientDrop);clientDrop.classList.toggle('hidden');userDrop.classList.add('hidden');};
-userBtn.onclick  =e=>{e.stopPropagation();placeDrop(userBtn,userDrop);userDrop.classList.toggle('hidden');clientDrop.classList.add('hidden');};
-document.addEventListener('click',e=>{if(!clientDrop.contains(e.target)&&e.target!==clientBtn)clientDrop.classList.add('hidden');
-                                       if(!userDrop.contains(e.target)&&e.target!==userBtn)userDrop.classList.add('hidden');});
+const placeDrop = (btn, drop) => {
+  const b = btn.getBoundingClientRect();
+  const f = filtersEl.getBoundingClientRect();
+  drop.style.left = (b.left - f.left) + 'px';
+  drop.style.top = (b.height + 6) + 'px';
+};
+clientBtn.onclick = e => {
+  e.stopPropagation();
+  placeDrop(clientBtn, clientDrop);
+  clientDrop.classList.toggle('hidden');
+  userDrop.classList.add('hidden');
+};
+userBtn.onclick = e => {
+  e.stopPropagation();
+  placeDrop(userBtn, userDrop);
+  userDrop.classList.toggle('hidden');
+  clientDrop.classList.add('hidden');
+};
+document.addEventListener('click', e => {
+  if (!clientDrop.contains(e.target) && e.target !== clientBtn) clientDrop.classList.add('hidden');
+  if (!userDrop.contains(e.target) && e.target !== userBtn) userDrop.classList.add('hidden');
+});
 
 /* ——— filtering ——— */
-const getChecked=d=>[...d.querySelectorAll('input:checked')].map(i=>i.value);
-function filter(){const c=getChecked(clientDrop),u=getChecked(userDrop);
-  tasks.forEach(card=>{card.style.display=card.dataset.status===currentStatus&&(c.length===0||c.includes(card.dataset.client))&&(u.length===0||u.includes(card.dataset.user))?'block':'none';});}
-[...clientDrop.querySelectorAll('input'),...userDrop.querySelectorAll('input')].forEach(i=>i.onchange=filter);
-clientDrop.querySelector('#clientClear').onclick=()=>{clientDrop.querySelectorAll('input').forEach(i=>i.checked=false);filter();};
-userDrop.querySelector('#userClear').onclick=()=>{userDrop.querySelectorAll('input').forEach(i=>i.checked=false);filter();};
-clientDrop.querySelector('#clientClose').onclick=()=>clientDrop.classList.add('hidden');
-userDrop.querySelector('#userClose').onclick=()=>userDrop.classList.add('hidden');
+const getChecked = d => [...d.querySelectorAll('input:checked')].map(i => i.value);
+function filter() {
+  const c = getChecked(clientDrop);
+  const u = getChecked(userDrop);
+  tasks.forEach(card => {
+    card.style.display = card.dataset.status === currentStatus && 
+                        (c.length === 0 || c.includes(card.dataset.client)) && 
+                        (u.length === 0 || u.includes(card.dataset.user)) ? 'block' : 'none';
+  });
+}
+
+[...clientDrop.querySelectorAll('input'), ...userDrop.querySelectorAll('input')].forEach(i => i.onchange = filter);
+clientDrop.querySelector('#clientClear').onclick = () => {
+  clientDrop.querySelectorAll('input').forEach(i => i.checked = false);
+  filter();
+};
+userDrop.querySelector('#userClear').onclick = () => {
+  userDrop.querySelectorAll('input').forEach(i => i.checked = false);
+  filter();
+};
+clientDrop.querySelector('#clientClose').onclick = () => clientDrop.classList.add('hidden');
+userDrop.querySelector('#userClose').onclick = () => userDrop.classList.add('hidden');
 
 /* ——— status switching ——— */
-const showList=()=>{chatThread.classList.add('hidden');chatThread.innerHTML='';tasksBox.classList.remove('hidden');statusBar.classList.remove('hidden');backBtn.classList.add('hidden');awaitingDraftConfirm=false;filter();}
-statusBtns.forEach(b=>b.onclick=()=>{document.querySelector('.status-item.active').classList.remove('active');b.classList.add('active');currentStatus=b.dataset.status;showList();});
+const showList = () => {
+  chatThread.classList.add('hidden');
+  chatMessages.innerHTML = '';
+  tasksBox.classList.remove('hidden');
+  statusBar.classList.remove('hidden');
+  headerSection.classList.remove('hidden');
+  backBtn.classList.add('hidden');
+  awaitingDraftConfirm = false;
+  awaitingDraftEdit = false;
+  awaitingDraftEditType = '';
+  draftDetails = {};
+  showingActionButtons = false;
+  currentCard = null;
+  filter();
+};
+
+statusBtns.forEach(b => b.onclick = () => {
+  document.querySelector('.status-item.active').classList.remove('active');
+  b.classList.add('active');
+  currentStatus = b.dataset.status;
+  showList();
+});
 filter();
 
-/* ——— chat send ——— */
-chatInput.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&!e.shiftKey){
-    e.preventDefault();
-
-    /* open chat view if user types before selecting card */
-    if(chatThread.classList.contains('hidden')){
-      chatThread.classList.remove('hidden');
-      tasksBox.classList.add('hidden');
-      statusBar.classList.add('hidden');
-      backBtn.classList.remove('hidden');
-    }
-
-    const txt=chatInput.value.trim();
-    if(!txt) return;
-    chatInput.value='';
-    chatThread.appendChild(bubble(txt)).scrollIntoView({behavior:'smooth'});
-
-    if(awaitingDraftConfirm){
-      const dots=typing();chatThread.appendChild(dots);
-      const ans=txt.toLowerCase();
-      setTimeout(()=>{dots.remove();
-        if(ans==='yes'){appendAI(draftSent(awaitingDraftClient));awaitingDraftConfirm=false;}
-        else if(ans==='no'){appendAI(draftAdjust());}
-        else appendAI('Please reply with “Yes” or “No”.');
-      },1500);
-      return;
-    }
-
-    const dots=typing();chatThread.appendChild(dots);
-    setTimeout(()=>{dots.remove();appendAI(marketingMsg);},1500);
+/* ——— card icon click handler ——— */
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('card-icon')) {
+    const card = e.target.closest('.task-card');
+    currentCard = card;
+    
+    // Hide header and status bar, show only the card
+    headerSection.classList.add('hidden');
+    statusBar.classList.add('hidden');
+    backBtn.classList.remove('hidden');
+    
+    // Hide all other cards
+    tasks.forEach(c => c.style.display = c === card ? 'block' : 'none');
+    
+    // Show chat
+    chatThread.classList.remove('hidden');
+    chatMessages.innerHTML = '';
+    
+    // Add initial AI message with action buttons
+    const dots = typing();
+    chatMessages.appendChild(dots);
+    
+    setTimeout(() => {
+      dots.remove();
+      const message = "How can I help you with this task?";
+      appendAI(message);
+      
+      // Add action buttons
+      const buttons = createActionButtons(card);
+      chatMessages.appendChild(buttons);
+      showingActionButtons = true;
+      
+      // Add click handlers for action buttons
+      buttons.querySelectorAll('.task-action-btn').forEach(btn => {
+        btn.onclick = () => handleActionButton(btn, card);
+      });
+      
+      // Scroll to bottom
+      setTimeout(() => {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }, 100);
+    }, 1500);
   }
 });
 
-/* ——— card actions ——— */
-document.querySelectorAll('.action-btn').forEach(btn=>{
-  btn.onclick=e=>{
-    const card=e.target.closest('.task-card');
-    const client=card.dataset.client.replace(/^\w/,m=>m.toUpperCase());
-    tasks.forEach(c=>c.style.display=c===card?'block':'none');
+/* ——— action button handler ——— */
+function handleActionButton(btn, card) {
+  const action = btn.dataset.action;
+  const client = card.dataset.client.replace(/^\w/, m => m.toUpperCase());
+  
+  // Add user message
+  chatMessages.appendChild(bubble(btn.textContent));
+  
+  // Remove action buttons
+  const actionButtons = btn.closest('.action-buttons');
+  if (actionButtons) actionButtons.remove();
+  showingActionButtons = false;
+  
+  // Add typing indicator
+  const dots = typing();
+  chatMessages.appendChild(dots);
+  
+  setTimeout(() => {
+    dots.remove();
+    
+    let response = '';
+    switch (action) {
+      case 'draft-email':
+        awaitingDraftConfirm = true;
+        awaitingDraftClient = client.toLowerCase();
+        response = draftConfirm(client.toLowerCase());
+        
+        // Add Yes/No buttons instead of regular action buttons
+        setTimeout(() => {
+          const yesNoButtons = document.createElement('div');
+          yesNoButtons.className = 'action-buttons';
+          yesNoButtons.innerHTML = `
+            <button class="btn btn-primary yes-no-btn" data-response="yes">Yes</button>
+            <button class="btn btn-secondary yes-no-btn" data-response="no">Edit Draft</button>
+          `;
+          chatMessages.appendChild(yesNoButtons);
+          
+          yesNoButtons.querySelectorAll('.yes-no-btn').forEach(yesNoBtn => {
+            yesNoBtn.onclick = () => handleYesNoButton(yesNoBtn, card);
+          });
+          
+          // Scroll to bottom
+          setTimeout(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+          }, 100);
+        }, 500);
+        break;
+      case 'propose-meeting':
+        response = meetingPrompt(client);
+        // Add action buttons back after the response
+        setTimeout(() => {
+          const buttons = createActionButtons(card);
+          chatMessages.appendChild(buttons);
+          showingActionButtons = true;
+          
+          buttons.querySelectorAll('.task-action-btn').forEach(newBtn => {
+            newBtn.onclick = () => handleActionButton(newBtn, card);
+          });
+          
+          // Scroll to show the buttons
+          setTimeout(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+          }, 100);
+        }, 500);
+        break;
+      case 'send-default':
+        response = defaultEmailMsg(client);
+        // Add action buttons back after the response
+        setTimeout(() => {
+          const buttons = createActionButtons(card);
+          chatMessages.appendChild(buttons);
+          showingActionButtons = true;
+          
+          buttons.querySelectorAll('.task-action-btn').forEach(newBtn => {
+            newBtn.onclick = () => handleActionButton(newBtn, card);
+          });
+          
+          // Scroll to bottom
+          setTimeout(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+          }, 100);
+        }, 500);
+        break;
+      case 'ignore':
+        response = ignoreMsg();
+        // Add action buttons back after the response
+        setTimeout(() => {
+          const buttons = createActionButtons(card);
+          chatMessages.appendChild(buttons);
+          showingActionButtons = true;
+          
+          buttons.querySelectorAll('.task-action-btn').forEach(newBtn => {
+            newBtn.onclick = () => handleActionButton(newBtn, card);
+          });
+          
+          // Scroll to bottom
+          setTimeout(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+          }, 100);
+        }, 500);
+        break;
+      case 'see-details':
+        response = seeDetailsMsg(card);
+        // Add action buttons back after the response
+        setTimeout(() => {
+          const buttons = createActionButtons(card);
+          chatMessages.appendChild(buttons);
+          showingActionButtons = true;
+          
+          buttons.querySelectorAll('.task-action-btn').forEach(newBtn => {
+            newBtn.onclick = () => handleActionButton(newBtn, card);
+          });
+          
+          // Scroll to bottom
+          setTimeout(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+          }, 100);
+        }, 500);
+        break;
+      default:
+        response = marketingMsg;
+    }
+    
+    appendAI(response);
+    
+  }, 1500);
+}
+
+/* ——— Draft edit button handler ——— */
+function handleDraftEdit(btn, card) {
+  const editType = btn.dataset.edit;
+  
+  // Add user message
+  chatMessages.appendChild(bubble(btn.textContent));
+  
+  // Remove edit buttons
+  const editButtons = btn.closest('.action-buttons');
+  if (editButtons) editButtons.remove();
+  
+  // Set edit state
+  awaitingDraftEdit = true;
+  awaitingDraftEditType = editType;
+  
+  // Add typing indicator
+  const dots = typing();
+  chatMessages.appendChild(dots);
+  
+  setTimeout(() => {
+    dots.remove();
+    
+    let response = '';
+    switch (editType) {
+      case 'email':
+        response = 'Please provide the new email address you would like to send to:';
+        break;
+      case 'subject':
+        response = 'Please provide the new subject line you would like to use:';
+        break;
+      case 'message':
+        response = 'Please provide the new message content you would like to send:';
+        break;
+    }
+    
+    appendAI(response);
+    
+  }, 1500);
+}
+
+/* ——— Yes/No button handler ——— */
+function handleYesNoButton(btn, card) {
+  const response = btn.dataset.response;
+  
+  // Add user message
+  chatMessages.appendChild(bubble(btn.textContent));
+  
+  // Remove Yes/No buttons
+  const yesNoButtons = btn.closest('.action-buttons');
+  if (yesNoButtons) yesNoButtons.remove();
+  
+  // Add typing indicator
+  const dots = typing();
+  chatMessages.appendChild(dots);
+  
+  setTimeout(() => {
+    dots.remove();
+    
+    let aiResponse = '';
+    if (response === 'yes') {
+      aiResponse = draftSent(awaitingDraftClient);
+      awaitingDraftConfirm = false;
+    } else if (response === 'no') {
+      aiResponse = draftAdjust();
+      awaitingDraftConfirm = false;
+    }
+    
+    appendAI(aiResponse);
+    
+    // Add specific draft edit buttons if user chose to edit
+    if (response === 'no') {
+      setTimeout(() => {
+        const editButtons = document.createElement('div');
+        editButtons.className = 'action-buttons';
+        editButtons.innerHTML = `
+          <button class="btn btn-primary draft-edit-btn" data-edit="email">Change Email</button>
+          <button class="btn btn-secondary draft-edit-btn" data-edit="subject">Change Subject</button>
+          <button class="btn btn-secondary draft-edit-btn" data-edit="message">Change Proposed Message</button>
+        `;
+        chatMessages.appendChild(editButtons);
+        
+        editButtons.querySelectorAll('.draft-edit-btn').forEach(editBtn => {
+          editBtn.onclick = () => handleDraftEdit(editBtn, card);
+        });
+        
+        setTimeout(() => {
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 100);
+      }, 500);
+    } else {
+      // Add action buttons back after the response
+      setTimeout(() => {
+        const buttons = createActionButtons(card);
+        chatMessages.appendChild(buttons);
+        showingActionButtons = true;
+        
+        buttons.querySelectorAll('.task-action-btn').forEach(newBtn => {
+          newBtn.onclick = () => handleActionButton(newBtn, card);
+        });
+        
+        // Scroll to show the buttons
+        setTimeout(() => {
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 100);
+      }, 500);
+    }
+    
+  }, 1500);
+}
+
+/* ——— Autocomplete functions ——— */
+function showAutocomplete() {
+  autocompleteDropdown.innerHTML = '';
+  emailContacts.forEach((contact, index) => {
+    const item = document.createElement('div');
+    item.className = 'autocomplete-item';
+    item.innerHTML = `
+      <div class="email">${contact.email}</div>
+      <div class="name">${contact.name}</div>
+    `;
+    item.onclick = () => selectAutocompleteItem(index);
+    autocompleteDropdown.appendChild(item);
+  });
+  
+  autocompleteDropdown.style.display = 'block';
+  autocompleteVisible = true;
+  selectedAutocompleteIndex = -1;
+}
+
+function hideAutocomplete() {
+  autocompleteDropdown.style.display = 'none';
+  autocompleteVisible = false;
+  selectedAutocompleteIndex = -1;
+  atSymbolPosition = -1;
+}
+
+function selectAutocompleteItem(index) {
+  if (index >= 0 && index < emailContacts.length) {
+    const contact = emailContacts[index];
+    const currentValue = chatInput.value;
+    const beforeAt = currentValue.substring(0, atSymbolPosition);
+    const afterAt = currentValue.substring(atSymbolPosition + 1);
+    
+    chatInput.value = beforeAt + contact.email + afterAt;
+    chatInput.focus();
+    
+    // Position cursor after the inserted email
+    const newPosition = beforeAt.length + contact.email.length;
+    chatInput.setSelectionRange(newPosition, newPosition);
+    
+    hideAutocomplete();
+  }
+}
+
+function updateAutocompleteSelection() {
+  const items = autocompleteDropdown.querySelectorAll('.autocomplete-item');
+  items.forEach((item, index) => {
+    item.classList.toggle('selected', index === selectedAutocompleteIndex);
+  });
+  
+  // Scroll selected item into view
+  if (selectedAutocompleteIndex >= 0) {
+    const selectedItem = items[selectedAutocompleteIndex];
+    if (selectedItem) {
+      selectedItem.scrollIntoView({ block: 'nearest' });
+    }
+  }
+}
+
+function isAtSymbolAlone(text, position) {
+  // Check if @ is at the beginning or preceded by whitespace
+  const beforeChar = position > 0 ? text[position - 1] : ' ';
+  // Check if @ is at the end or followed by whitespace
+  const afterChar = position < text.length - 1 ? text[position + 1] : ' ';
+  
+  return /\s/.test(beforeChar) && (/\s/.test(afterChar) || position === text.length - 1);
+}
+
+/* ——— chat send ——— */
+/* ——— Input event listeners ——— */
+chatInput.addEventListener('input', e => {
+  const value = chatInput.value;
+  const cursorPosition = chatInput.selectionStart;
+  
+  // Check for @ symbol
+  const atIndex = value.lastIndexOf('@', cursorPosition - 1);
+  
+  if (atIndex !== -1 && isAtSymbolAlone(value, atIndex)) {
+    // Check if cursor is right after the @ or if there's only whitespace after @
+    const textAfterAt = value.substring(atIndex + 1, cursorPosition);
+    if (textAfterAt === '' || /^\s*$/.test(textAfterAt)) {
+      atSymbolPosition = atIndex;
+      showAutocomplete();
+    } else {
+      hideAutocomplete();
+    }
+  } else {
+    hideAutocomplete();
+  }
+});
+
+chatInput.addEventListener('keydown', e => {
+  if (autocompleteVisible) {
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        selectedAutocompleteIndex = Math.min(selectedAutocompleteIndex + 1, emailContacts.length - 1);
+        updateAutocompleteSelection();
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        selectedAutocompleteIndex = Math.max(selectedAutocompleteIndex - 1, 0);
+        updateAutocompleteSelection();
+        break;
+      case 'Enter':
+        if (selectedAutocompleteIndex >= 0) {
+          e.preventDefault();
+          selectAutocompleteItem(selectedAutocompleteIndex);
+          return;
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        hideAutocomplete();
+        break;
+      case 'Tab':
+        if (selectedAutocompleteIndex >= 0) {
+          e.preventDefault();
+          selectAutocompleteItem(selectedAutocompleteIndex);
+          return;
+        }
+        break;
+    }
+  }
+  
+  // Original Enter key handler
+  if (e.key === 'Enter' && !e.shiftKey && !autocompleteVisible) {
+    e.preventDefault();
+
+    /* open chat view if user types before selecting card */
+    if (chatThread.classList.contains('hidden')) {
+      chatThread.classList.remove('hidden');
+      tasksBox.classList.add('hidden');
+      statusBar.classList.add('hidden');
+      headerSection.classList.add('hidden');
+      backBtn.classList.remove('hidden');
+    }
+
+    const txt = chatInput.value.trim();
+    if (!txt) return;
+    chatInput.value = '';
+    const userMsg = bubble(txt);
+    chatMessages.appendChild(userMsg);
+    
+    // Scroll to bottom
+    setTimeout(() => {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 100);
+
+    if (awaitingDraftEdit) {
+      const dots = typing();
+      chatMessages.appendChild(dots);
+      
+      setTimeout(() => {
+        dots.remove();
+        
+        // Update draft details based on edit type
+        switch (awaitingDraftEditType) {
+          case 'email':
+            draftDetails.to = txt;
+            break;
+          case 'subject':
+            draftDetails.subject = txt;
+            break;
+          case 'message':
+            draftDetails.message = txt;
+            break;
+        }
+        
+        // Show updated draft
+        appendAI(`Perfect! I've updated the ${awaitingDraftEditType}. Here's your updated draft:`);
+        
+        setTimeout(() => {
+          appendAI(draftConfirm(awaitingDraftClient, draftDetails));
+          awaitingDraftEdit = false;
+          awaitingDraftEditType = '';
+          awaitingDraftConfirm = true;
+          
+          // Add Yes/Edit buttons for the updated draft
+          setTimeout(() => {
+            const yesNoButtons = document.createElement('div');
+            yesNoButtons.className = 'action-buttons';
+            yesNoButtons.innerHTML = `
+              <button class="btn btn-primary yes-no-btn" data-response="yes">Yes</button>
+              <button class="btn btn-secondary yes-no-btn" data-response="no">Edit Draft</button>
+            `;
+            chatMessages.appendChild(yesNoButtons);
+            
+            yesNoButtons.querySelectorAll('.yes-no-btn').forEach(yesNoBtn => {
+              yesNoBtn.onclick = () => handleYesNoButton(yesNoBtn, currentCard);
+            });
+            
+            setTimeout(() => {
+              chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 100);
+          }, 500);
+        }, 1000);
+      }, 1500);
+      return;
+    }
+
+    if (awaitingDraftConfirm) {
+      const dots = typing();
+      chatMessages.appendChild(dots);
+      const ans = txt.toLowerCase();
+      setTimeout(() => {
+        dots.remove();
+        if (ans === 'yes') {
+          appendAI(draftSent(awaitingDraftClient));
+          awaitingDraftConfirm = false;
+          
+          // Add action buttons back
+          if (currentCard) {
+            setTimeout(() => {
+              const buttons = createActionButtons(currentCard);
+              chatMessages.appendChild(buttons);
+              showingActionButtons = true;
+              
+              buttons.querySelectorAll('.task-action-btn').forEach(btn => {
+                btn.onclick = () => handleActionButton(btn, currentCard);
+              });
+              
+              setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+              }, 100);
+            }, 500);
+          }
+        } else if (ans === 'no' || ans === 'edit draft') {
+          appendAI(draftAdjust());
+          awaitingDraftConfirm = false;
+          
+          // Add action buttons back
+          if (currentCard) {
+            setTimeout(() => {
+              const buttons = createActionButtons(currentCard);
+              chatMessages.appendChild(buttons);
+              showingActionButtons = true;
+              
+              buttons.querySelectorAll('.task-action-btn').forEach(btn => {
+                btn.onclick = () => handleActionButton(btn, currentCard);
+              });
+              
+              setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+              }, 100);
+            }, 500);
+          }
+        } else {
+          appendAI('Please use the Yes or Edit Draft buttons below to respond.');
+        }
+      }, 1500);
+      return;
+    }
+
+    // Check if user typed a button command and we have a current card
+    if (currentCard && !awaitingDraftEdit) {
+      const lowerTxt = txt.toLowerCase();
+      const client = currentCard.dataset.client.replace(/^\w/, m => m.toUpperCase());
+      let matchedAction = null;
+      
+      if (lowerTxt === 'draft email') {
+        matchedAction = 'draft-email';
+      } else if (lowerTxt === 'propose meeting') {
+        matchedAction = 'propose-meeting';
+      } else if (lowerTxt === 'send default email') {
+        matchedAction = 'send-default';
+      } else if (lowerTxt === 'ignore') {
+        matchedAction = 'ignore';
+      } else if (lowerTxt === 'see details') {
+        matchedAction = 'see-details';
+      }
+      
+      if (matchedAction) {
+        // Remove existing action buttons if present
+        const existingButtons = chatMessages.querySelector('.action-buttons');
+        if (existingButtons) existingButtons.remove();
+        
+        const dots = typing();
+        chatMessages.appendChild(dots);
+        
+        setTimeout(() => {
+          dots.remove();
+          
+          let response = '';
+          switch (matchedAction) {
+            case 'draft-email':
+              awaitingDraftConfirm = true;
+              awaitingDraftClient = client.toLowerCase();
+              response = draftConfirm(client.toLowerCase());
+              
+              // Add Yes/No buttons
+              setTimeout(() => {
+                const yesNoButtons = document.createElement('div');
+                yesNoButtons.className = 'action-buttons';
+                yesNoButtons.innerHTML = `
+                  <button class="btn btn-primary yes-no-btn" data-response="yes">Yes</button>
+                  <button class="btn btn-secondary yes-no-btn" data-response="no">Edit Draft</button>
+                `;
+                chatMessages.appendChild(yesNoButtons);
+                
+                yesNoButtons.querySelectorAll('.yes-no-btn').forEach(yesNoBtn => {
+                  yesNoBtn.onclick = () => handleYesNoButton(yesNoBtn, currentCard);
+                });
+                
+                setTimeout(() => {
+                  chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 100);
+              }, 500);
+              break;
+            case 'propose-meeting':
+              response = meetingPrompt(client);
+              break;
+            case 'send-default':
+              response = defaultEmailMsg(client);
+              break;
+            case 'ignore':
+              response = ignoreMsg();
+              break;
+            case 'see-details':
+              response = seeDetailsMsg(currentCard);
+              break;
+          }
+          
+          appendAI(response);
+          
+          // Add action buttons back (except for draft-email which has Yes/No)
+          if (matchedAction !== 'draft-email') {
+            setTimeout(() => {
+              const buttons = createActionButtons(currentCard);
+              chatMessages.appendChild(buttons);
+              showingActionButtons = true;
+              
+              buttons.querySelectorAll('.task-action-btn').forEach(btn => {
+                btn.onclick = () => handleActionButton(btn, currentCard);
+              });
+              
+              setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+              }, 100);
+            }, 500);
+          }
+          
+        }, 1500);
+        return;
+      }
+    }
+
+    // Default response when no card is selected or command doesn't match
+    const dots = typing();
+    chatMessages.appendChild(dots);
+    setTimeout(() => {
+      dots.remove();
+      appendAI(marketingMsg);
+      
+      // Only add action buttons if we have a current card
+      if (currentCard) {
+        setTimeout(() => {
+          const buttons = createActionButtons(currentCard);
+          chatMessages.appendChild(buttons);
+          showingActionButtons = true;
+          
+          buttons.querySelectorAll('.task-action-btn').forEach(btn => {
+            btn.onclick = () => handleActionButton(btn, currentCard);
+          });
+          
+          setTimeout(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+          }, 100);
+        }, 500);
+      }
+    }, 1500);
+  }
+});
+
+// Hide autocomplete when clicking outside
+document.addEventListener('click', e => {
+  if (!chatInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
+    hideAutocomplete();
+  }
+});
+
+/* ——— original card actions (Create Draft/Propose Meeting buttons) ——— */
+document.querySelectorAll('.action-btn').forEach(btn => {
+  btn.onclick = e => {
+    const card = e.target.closest('.task-card');
+    const client = card.dataset.client.replace(/^\w/, m => m.toUpperCase());
+    currentCard = card;
+    
+    // Hide header and status bar
+    headerSection.classList.add('hidden');
     statusBar.classList.add('hidden');
     backBtn.classList.remove('hidden');
-    chatThread.classList.remove('hidden');chatThread.innerHTML='';
-    chatThread.appendChild(bubble(btn.textContent));
-    const dots=typing();chatThread.appendChild(dots);
+    
+    // Hide all other cards
+    tasks.forEach(c => c.style.display = c === card ? 'block' : 'none');
+    
+    // Show chat
+    chatThread.classList.remove('hidden');
+    chatMessages.innerHTML = '';
+    chatMessages.appendChild(bubble(btn.textContent));
+    
+    const dots = typing();
+    chatMessages.appendChild(dots);
 
-    if(btn.textContent.includes('Draft')){
-      awaitingDraftConfirm=true;awaitingDraftConfirm=client;
-      setTimeout(()=>{dots.remove();appendAI(draftConfirm(client));awaitingDraftClient=client;},1500);
-    }else{
-      awaitingDraftConfirm=false;
-      setTimeout(()=>{dots.remove();appendAI(meetingPrompt(client));},1500);
+    if (btn.textContent.includes('Draft')) {
+      awaitingDraftConfirm = true;
+      awaitingDraftClient = client.toLowerCase();
+      setTimeout(() => {
+        dots.remove();
+        appendAI(draftConfirm(client.toLowerCase()));
+        
+        // Add Yes/No buttons after the AI response
+        setTimeout(() => {
+          const yesNoButtons = document.createElement('div');
+          yesNoButtons.className = 'action-buttons';
+          yesNoButtons.innerHTML = `
+            <button class="btn btn-primary yes-no-btn" data-response="yes">Yes</button>
+            <button class="btn btn-secondary yes-no-btn" data-response="no">Edit Draft</button>
+          `;
+          chatMessages.appendChild(yesNoButtons);
+          
+          yesNoButtons.querySelectorAll('.yes-no-btn').forEach(yesNoBtn => {
+            yesNoBtn.onclick = () => handleYesNoButton(yesNoBtn, card);
+          });
+          
+          setTimeout(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+          }, 100);
+        }, 500);
+      }, 1500);
+    } else {
+      awaitingDraftConfirm = false;
+      setTimeout(() => {
+        dots.remove();
+        appendAI(meetingPrompt(client));
+      }, 1500);
     }
   };
 });
-backBtn.onclick=showList;
+
+backBtn.onclick = showList;
 </script>
 </body>
 </html>
