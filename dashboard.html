@@ -1,20 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Dashboard - Eve AI</title>
+
 <script>
-// Update title with company name if available
 const companyName = localStorage.getItem('eve_company');
-if (companyName) {
-  document.title = `${companyName} - Eve AI Dashboard`;
-}
+if (companyName) document.title = `${companyName} - Eve AI Dashboard`;
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-:root{--w:700px}
+:root{--w:100%}
 
 /* ——— base layout ——— */
 body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,#0A0A0A 90%,#000);color:#F4F4F5;font-family:Inter,sans-serif;overflow:hidden}
@@ -24,7 +22,7 @@ body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,
 /* ——— sidebar ——— */
 .sidebar{position:fixed;inset:0 auto 0 0;width:56px;background:#18181B;display:flex;flex-direction:column;justify-content:space-between;align-items:center}
 .side-group{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0}
-.side-btn{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:transparent;cursor:pointer;transition:background 0.2s;}
+.side-btn{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:transparent;cursor:pointer;transition:background .2s}
 .side-btn:hover{background:#3d3d43}
 .side-btn.active{background:#3d3d43}
 
@@ -36,22 +34,59 @@ body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,
 
 /* ——— dashboard content ——— */
 .dashboard-header{margin-bottom:32px}
-.dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:900px}
-.metric-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px;transition:all 0.3s;}
-.metric-card:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}
-.metric-value{font-size:2rem;font-weight:700;margin:8px 0 4px 0}
-.metric-label{font-size:16px;font-weight:500;color:#F4F4F5;margin-bottom:4px}
-.metric-subtitle{font-size:14px;color:#A1A1AA}
-.metric-value.purple{color:#C084FC}
-.metric-value.blue{color:#60A5FA}
-.metric-value.green{color:#34D399}
+.dashboard-grid{display:grid;grid-template-columns:2fr 1fr;gap:32px;max-width:100%;margin-bottom:32px}
+.dashboard-section{display:flex;flex-direction:column;gap:24px}
+
+.section-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px;transition:.3s}
+.section-card:hover{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.20)}
+
+.section-header{display:flex;justify-content:between;align-items:center;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.1)}
+.section-title{font-size:18px;font-weight:600;display:flex;align-items:center;gap:8px}
+.section-subtitle{font-size:12px;color:#A1A1AA;margin-top:4px}
+
+.task-item,.lead-item{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin-bottom:12px;transition:.3s}
+.task-item:hover,.lead-item:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15)}
+.task-item:last-child,.lead-item:last-child{margin-bottom:0}
+
+.task-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.task-title{font-size:15px;font-weight:500;color:#F4F4F5;margin-bottom:4px}
+.task-company{font-size:13px;color:#C084FC}
+.task-priority{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase}
+.priority-high{background:rgba(239,68,68,.20);color:#EF4444}
+.priority-medium{background:rgba(251,191,36,.20);color:#F59E0B}
+.priority-low{background:rgba(34,197,94,.20);color:#22C55E}
+
+.task-actions{display:flex;gap:8px;margin-top:12px}
+.btn{padding:6px 12px;font-size:12px;font-weight:500;border-radius:6px;border:none;cursor:pointer;transition:.2s}
+.btn-primary{background:#C026D3;color:#fff}
+.btn-primary:hover{background:#A21CAF}
+.btn-secondary{background:rgba(255,255,255,.08);color:#F4F4F5;border:1px solid rgba(255,255,255,.2)}
+.btn-secondary:hover{background:rgba(255,255,255,.12)}
+.btn-automate{background:rgba(34,197,94,.8);color:#fff;position:relative}
+.btn-automate:hover{background:rgba(34,197,94,1)}
+.lead-company{font-size:16px;font-weight:600;color:#F4F4F5;margin-bottom:4px}
+.lead-contact{font-size:13px;color:#A1A1AA;margin-bottom:8px}
+.lead-revenue{font-size:14px;color:#22C55E;font-weight:600;margin-bottom:12px}
+
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;text-align:center}
+.stat-value{font-size:24px;font-weight:700;margin-bottom:4px}
+.stat-label{font-size:12px;color:#A1A1AA;text-transform:uppercase;letter-spacing:.5px}
+.stat-purple{color:#C084FC}.stat-blue{color:#60A5FA}.stat-green{color:#34D399}
 
 /* ——— content area ——— */
 .content-area{overflow-y:auto;flex:1;scrollbar-width:none;min-height:0;padding-bottom:20px}
 .content-area::-webkit-scrollbar{display:none}
 
-/* ——— util ——— */
-.hidden{display:none!important}
+/* ——— automation modal ——— */
+#automationModal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5);z-index:50}
+.modal-panel{background:#18181B;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:24px;width:320px}
+.modal-title{font-size:18px;font-weight:600;margin-bottom:12px;color:#C084FC}
+.option-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.option-row input{
+  accent-color:#C026D3;  
+}.modal-btns{display:flex;gap:12px;margin-top:20px}
+.modal-btns .btn{flex:1}
 </style>
 </head>
 <body>
@@ -60,41 +95,22 @@ body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,
 <nav class="sidebar">
   <div class="side-group">
     <img src="front.png" class="w-10" alt="EVE">
-    
-    <!-- Dashboard Icon (Active) -->
     <button class="side-btn active" onclick="goToPage('dashboard.html')">
-      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 12a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1v-4zM11 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM11 12a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/>
-      </svg>
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M3 4h4v4H3V4zM3 12h4v4H3v-4zM11 4h4v4h-4V4zM11 12h4v4h-4v-4z"/></svg>
     </button>
-    
-    <!-- Tasks Icon -->
-    <button class="side-btn" onclick="goToPage('report.html')">
-      <img src="icon.png" class="w-5" alt="Tasks">
-    </button>
-    
-    <!-- Contact List Icon -->
+    <button class="side-btn" onclick="goToPage('report.html')"><img src="icon.png" class="w-5" alt="Tasks"></button>
     <button class="side-btn" onclick="goToPage('contacts.html')">
       <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
         <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-      </svg>
+    </svg>
     </button>
-    
-    <!-- Integrations Icon -->
     <button class="side-btn" onclick="goToPage('integration-complete.html')">
-      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
-      </svg>
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
     </button>
-    
-    <!-- Profile/Company Icon -->
     <button class="side-btn" onclick="goToPage('profile.html')">
-      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"/>
-      </svg>
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A6 6 0 0010 16a6 6 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"/></svg>
     </button>
   </div>
-  
   <div id="avatarWrap" class="side-group pb-4 cursor-pointer">
     <img id="avatarImg" src="profile.png" class="w-10 h-10 rounded-full object-cover" alt="">
     <div id="avatarMenu"><a href="login.html">Log Out</a></div>
@@ -103,85 +119,213 @@ body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,
 
 <div class="wrapper">
   <div class="column">
-
     <!-- HEADER -->
     <div class="dashboard-header">
       <div class="flex items-center gap-3 mb-2">
-        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 12a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1v-4zM11 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM11 12a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/>
-        </svg>
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M3 4h4v4H3V4zM3 12h4v4H3v-4zM11 4h4v4h-4V4zM11 12h4v4h-4v-4z"/></svg>
         <h1 class="text-3xl font-semibold">Dashboard</h1>
       </div>
+      <p class="text-gray-400">Your priority tasks and top leads for today</p>
     </div>
 
-    <!-- DASHBOARD CONTENT -->
+    <!-- QUICK STATS -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-value stat-purple">4</div><div class="stat-label">Due Today</div></div>
+      <div class="stat-card"><div class="stat-value stat-blue">7</div><div class="stat-label">This Week</div></div>
+      <div class="stat-card"><div class="stat-value stat-green">$85K</div><div class="stat-label">Pipeline Value</div></div>
+    </div>
+
+    <!-- CONTENT -->
     <div class="content-area">
       <div class="dashboard-grid">
-        
-        <!-- Active Tasks Card -->
-        <div class="metric-card">
-          <div class="metric-label">Active Tasks</div>
-          <div class="metric-value purple">5</div>
-          <div class="metric-subtitle">2 due this week</div>
+        <!-- LEFT COLUMN -->
+        <div class="dashboard-section">
+          <!-- TODAY TASKS -->
+          <div class="section-card">
+            <div class="section-header">
+              <div>
+                <div class="section-title">
+                  <svg class="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                  Due Today
+                </div>
+                <div class="section-subtitle">4 tasks need immediate attention</div>
+              </div>
+            </div>
+            <!-- tasks -->
+            <div class="task-item">
+              <div class="task-header">
+                <div><div class="task-title">Deliver Product Demo</div><div class="task-company">Zarges USA • Jamie Fergus</div></div>
+                <div class="task-priority priority-high">High</div>
+              </div>
+              <div class="task-actions">
+                <button class="btn btn-primary" onclick="goToTask('zarges', 'Create Draft')">Create Draft</button>
+                <button class="btn btn-automate" onclick="automate('zarges')">Automate</button>
+                <button class="btn btn-secondary" onclick="goToPage('report.html')">View Details</button>
+              </div>
+            </div>
+
+            <div class="task-item">
+              <div class="task-header">
+                <div><div class="task-title">Follow Up Partnership Discussion</div><div class="task-company">Boots Digital Health • Adam Brown</div></div>
+                <div class="task-priority priority-high">High</div>
+              </div>
+              <div class="task-actions">
+                <button class="btn btn-primary" onclick="goToTask('boots', 'Send Email')">Send Email</button>
+                <button class="btn btn-automate" onclick="automate('boots')">Automate</button>
+                <button class="btn btn-secondary" onclick="goToPage('report.html')">View Details</button>
+              </div>
+            </div>
+
+            <div class="task-item">
+              <div class="task-header">
+                <div><div class="task-title">Schedule Demo with CFO</div><div class="task-company">RedCorp • Sarah Johnson</div></div>
+                <div class="task-priority priority-high">High</div>
+              </div>
+              <div class="task-actions">
+                <button class="btn btn-primary" onclick="goToTask('redcorp', 'Propose Meeting')">Propose Meeting</button>
+                <button class="btn btn-automate" onclick="automate('redcorp')">Automate</button>
+                <button class="btn btn-secondary" onclick="goToPage('report.html')">View Details</button>
+              </div>
+            </div>
+
+            <div class="task-item">
+              <div class="task-header">
+                <div><div class="task-title">Pricing Discussion</div><div class="task-company">TechFlow Solutions • Mike Davis</div></div>
+                <div class="task-priority priority-medium">Medium</div>
+              </div>
+              <div class="task-actions">
+                <button class="btn btn-primary" onclick="goToTask('techflow', 'Send Proposal')">Send Proposal</button>
+                <button class="btn btn-automate" onclick="automate('techflow')">Automate</button>
+                <button class="btn btn-secondary" onclick="goToPage('report.html')">View Details</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- WEEK TASKS -->
+          <div class="section-card">
+            <div class="section-header">
+              <div>
+                <div class="section-title">
+                  <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
+                  Due This Week
+                </div>
+                <div class="section-subtitle">3 tasks scheduled for completion</div>
+              </div>
+            </div>
+
+            <div class="task-item">
+              <div class="task-header">
+                <div><div class="task-title">Product Walkthrough Coordination</div><div class="task-company">DataSync Corp • Lisa Chen</div></div>
+                <div class="task-priority priority-medium">Medium</div>
+              </div>
+              <div class="task-actions">
+                <button class="btn btn-primary" onclick="goToTask('datasync', 'Update Progress')">Update Progress</button>
+                <button class="btn btn-automate" onclick="automate('datasync')">Automate</button>
+              </div>
+            </div>
+
+            <div class="task-item">
+              <div class="task-header">
+                <div><div class="task-title">Q4 Review Meeting Prep</div><div class="task-company">CloudTech Innovations • David Wilson</div></div>
+                <div class="task-priority priority-low">Low</div>
+              </div>
+              <div class="task-actions">
+                <button class="btn btn-primary" onclick="goToTask('cloudtech', 'Schedule')">Schedule</button>
+                <button class="btn btn-automate" onclick="automate('cloudtech')">Automate</button>
+              </div>
+            </div>
+
+            <div class="task-item">
+              <div class="task-header">
+                <div><div class="task-title">Contract Review</div><div class="task-company">InnovateLab • Emily Brown</div></div>
+                <div class="task-priority priority-low">Low</div>
+              </div>
+              <div class="task-actions">
+                <button class="btn btn-primary" onclick="goToTask('innovatelab', 'Review')">Review</button>
+                <button class="btn btn-automate" onclick="automate('innovatelab')">Automate</button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Active Contacts Card -->
-        <div class="metric-card">
-          <div class="metric-label">Active Contacts</div>
-          <div class="metric-value blue">12</div>
-          <div class="metric-subtitle">3 hot prospects</div>
-        </div>
+        <!-- RIGHT COLUMN -->
+        <div class="dashboard-section">
+          <div class="section-card">
+            <div class="section-header">
+              <div>
+                <div class="section-title">
+                  <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.3 2.3 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.3 2.3 0 01-.567.267z"/><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092A4.5 4.5 0 007.324 6.9C6.602 7.38 6 8.155 6 9s.602 1.62 1.324 2.1A4.5 4.5 0 0010 12.908V15a1 1 0 102 0v-2.092a4.5 4.5 0 001.676-.662C13.398 11.62 14 10.845 14 10s-.602-1.62-1.324-2.1A4.5 4.5 0 0011 6.092V5z" clip-rule="evenodd"/></svg>
+                  Top Leads
+                </div>
+                <div class="section-subtitle">High-value prospects requiring attention</div>
+              </div>
+            </div>
 
-        <!-- Revenue Pipeline Card -->
-        <div class="metric-card">
-          <div class="metric-label">Revenue Pipeline</div>
-          <div class="metric-value green">$45K</div>
-          <div class="metric-subtitle">82% confidence</div>
+            <!-- leads -->
+            <div class="lead-item">
+              <div class="lead-company">Zarges USA</div><div class="lead-contact">Jamie Fergus • Business Development Specialist</div><div class="lead-revenue">$15K potential • 85% confidence</div>
+              <div class="task-actions"><button class="btn btn-primary" onclick="goToPage('contacts.html')">View Contact</button><button class="btn btn-automate" onclick="automate('zarges')">Automate</button></div>
+            </div>
+            <div class="lead-item">
+              <div class="lead-company">Boots Digital Health</div><div class="lead-contact">Adam Brown • Head of Digital Health Innovation</div><div class="lead-revenue">$10K potential • 80% confidence</div>
+              <div class="task-actions"><button class="btn btn-primary" onclick="goToPage('contacts.html')">View Contact</button><button class="btn btn-automate" onclick="automate('boots')">Automate</button></div>
+            </div>
+            <div class="lead-item">
+              <div class="lead-company">RedCorp</div><div class="lead-contact">Sarah Johnson • CFO</div><div class="lead-revenue">$25K potential • 75% confidence</div>
+              <div class="task-actions"><button class="btn btn-primary" onclick="goToPage('contacts.html')">View Contact</button><button class="btn btn-automate" onclick="automate('redcorp')">Automate</button></div>
+            </div>
+            <div class="lead-item">
+              <div class="lead-company">TechFlow Solutions</div><div class="lead-contact">Mike Davis • Head of Operations</div><div class="lead-revenue">$18K potential • 70% confidence</div>
+              <div class="task-actions"><button class="btn btn-primary" onclick="goToPage('contacts.html')">View Contact</button><button class="btn btn-automate" onclick="automate('techflow')">Automate</button></div>
+            </div>
+            <div class="lead-item">
+              <div class="lead-company">DataSync Corp</div><div class="lead-contact">Lisa Chen • Product Manager</div><div class="lead-revenue">$12K potential • 65% confidence</div>
+              <div class="task-actions"><button class="btn btn-primary" onclick="goToPage('contacts.html')">View Contact</button><button class="btn btn-automate" onclick="automate('datasync')">Automate</button></div>
+            </div>
+          </div>
         </div>
-
       </div>
     </div>
   </div>
 </div>
 
+<!-- AUTOMATION MODAL -->
+<div id="automationModal" onclick="closeModal(event)">
+  <div class="modal-panel" onclick="event.stopPropagation()">
+    <div class="modal-title" id="modalTitle">Automation</div>
+    <div class="option-row"><input type="checkbox" id="optEmail" checked><label for="optEmail">Handle email responses</label></div>
+    <div class="option-row"><input type="checkbox" id="optFollow" checked><label for="optFollow">Schedule follow-ups</label></div>
+    <div class="option-row"><input type="checkbox" id="optStatus" checked><label for="optStatus">Update task status</label></div>
+    <div class="option-row"><input type="checkbox" id="optSuggest" checked><label for="optSuggest">Provide suggestions</label></div>
+    <div class="modal-btns"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="confirmAutomation()">Confirm</button></div>
+  </div>
+</div>
+
 <script>
-/* ——— company & refs ——— */
-const COMPANY = localStorage.getItem('eve_company') || 'Your Company';
-const avatarImg = document.getElementById('avatarImg');
-const avatarMenu = document.getElementById('avatarMenu');
+const avatarImg=document.getElementById('avatarImg');
+const avatarMenu=document.getElementById('avatarMenu');
+const modal=document.getElementById('automationModal');
+const mTitle=document.getElementById('modalTitle');
+const chk=id=>document.getElementById(id);
+let currentCompany=null;
 
-/* ——— navigation ——— */
-function goToPage(page) {
-  window.location.href = page;
+function goToPage(p){window.location.href=p}
+function goToTask(c,action){
+  localStorage.setItem('selected_task_company',c);
+  if(action) localStorage.setItem('selected_task_action',action);
+  goToPage('report.html');
+}
+function automate(c){currentCompany=c;mTitle.textContent=`Automate ${c.charAt(0).toUpperCase()+c.slice(1)}`;modal.style.display='flex'}
+function closeModal(){modal.style.display='none'}
+function confirmAutomation(){
+  const cfg={email:chk('optEmail').checked,follow:chk('optFollow').checked,status:chk('optStatus').checked,suggest:chk('optSuggest').checked};
+  const map=JSON.parse(localStorage.getItem('eve_automated_companies')||'{}');
+  map[currentCompany]=cfg;localStorage.setItem('eve_automated_companies',JSON.stringify(map));
+  closeModal();
 }
 
-/* ——— avatar dropdown ——— */
-avatarImg.onclick = e => {
-  e.stopPropagation();
-  avatarMenu.style.display = avatarMenu.style.display === 'block' ? 'none' : 'block';
-};
-
-document.addEventListener('click', e => {
-  if (!avatarMenu.contains(e.target) && e.target !== avatarImg) {
-    avatarMenu.style.display = 'none';
-  }
-});
-
-/* ——— sidebar navigation ——— */
-document.querySelectorAll('.side-btn').forEach(btn => {
-  btn.addEventListener('click', function(e) {
-    // Remove active class from all buttons
-    document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
-    // Add active class to clicked button
-    this.classList.add('active');
-  });
-});
-
-/* ——— update page title ——— */
-if (COMPANY !== 'Your Company') {
-  document.title = `${COMPANY} - Dashboard`;
-}
+avatarImg.onclick=e=>{e.stopPropagation();avatarMenu.style.display=avatarMenu.style.display==='block'?'none':'block'}
+document.addEventListener('click',e=>{if(!avatarMenu.contains(e.target)&&e.target!==avatarImg)avatarMenu.style.display='none'})
 </script>
-
 </body>
 </html>
