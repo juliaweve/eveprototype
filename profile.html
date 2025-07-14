@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Profile - Eve AI</title>
+<script>
+// Update title with company name if available
+const companyName = localStorage.getItem('eve_company');
+if (companyName) {
+  document.title = `${companyName} - Eve AI Profile`;
+}
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+:root{--w:100%}
+
+/* ——— base layout ——— */
+body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,#0A0A0A 90%,#000);color:#F4F4F5;font-family:Inter,sans-serif;overflow:hidden}
+.wrapper{margin-left:56px;padding:24px;height:100vh;display:flex;justify-content:flex-start;overflow:hidden}
+.column{width:100%;display:flex;flex-direction:column;height:100vh;justify-content:flex-start}
+
+/* ——— sidebar ——— */
+.sidebar{position:fixed;inset:0 auto 0 0;width:56px;background:#18181B;display:flex;flex-direction:column;justify-content:space-between;align-items:center}
+.side-group{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0}
+.side-btn{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:transparent;cursor:pointer;transition:background 0.2s;}
+.side-btn:hover{background:#3d3d43}
+.side-btn.active{background:#3d3d43}
+
+/* avatar dropdown */
+#avatarWrap{position:relative}
+#avatarMenu{position:absolute;bottom:60px;left:-20px;background:#2e2e33;border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:8px 0;min-width:140px;display:none}
+#avatarMenu a{display:block;padding:8px 16px;font-size:14px;color:#F4F4F5;text-decoration:none}
+#avatarMenu a:hover{background:rgba(255,255,255,.08)}
+
+/* ——— profile content ——— */
+.profile-header{margin-bottom:32px}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:var(--w)}
+.profile-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px;transition:all 0.3s;}
+.profile-card:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}
+
+.card-title{font-size:18px;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.card-content > .info-item:not(:last-child){margin-bottom:16px}
+
+.info-item{margin-bottom:16px}
+.info-label{font-size:14px;color:#A1A1AA;margin-bottom:4px}
+.info-value{font-size:16px;color:#F4F4F5;font-weight:500}
+
+.integration-item{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.integration-status{padding:3px 8px;border-radius:6px;font-size:11px;text-transform:uppercase;font-weight:600}
+.status-connected{background:rgba(34,197,94,0.2);color:#34D399}
+.status-disconnected{background:rgba(239,68,68,0.2);color:#EF4444}
+
+.btn{padding:10px 20px;font-size:14px;border-radius:8px;border:none;cursor:pointer;transition:all 0.2s}
+.btn-primary{background:#C026D3;color:#fff}
+.btn-primary:hover{background:#A21CAF}
+.btn-secondary{background:rgba(255,255,255,.08);color:#F4F4F5;border:1px solid rgba(255,255,255,.2)}
+.btn-secondary:hover{background:rgba(255,255,255,.12)}
+
+.edit-form{display:none}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:14px;color:#A1A1AA;margin-bottom:6px}
+.form-input{width:100%;padding:10px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#F4F4F5;font-size:14px}
+.form-input:focus{border-color:rgba(196,38,211,0.5);outline:none}
+.form-textarea{min-height:80px;resize:vertical}
+
+/* ——— content area ——— */
+.content-area{overflow-y:auto;flex:1;scrollbar-width:none;min-height:0;padding-bottom:20px}
+.content-area::-webkit-scrollbar{display:none}
+
+/* ——— util ——— */
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="side-group">
+    <img src="front.png" class="w-10" alt="EVE">
+    
+    <!-- Dashboard Icon -->
+    <button class="side-btn" onclick="goToPage('dashboard.html')">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 12a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1v-4zM11 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM11 12a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/>
+      </svg>
+    </button>
+    
+    <!-- Tasks Icon -->
+    <button class="side-btn" onclick="goToPage('report.html')">
+      <img src="icon.png" class="w-5" alt="Tasks">
+    </button>
+    
+    <!-- Contact List Icon -->
+    <button class="side-btn" onclick="goToPage('contacts.html')">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+      </svg>
+    </button>
+    
+    <!-- Integrations Icon -->
+    <button class="side-btn" onclick="goToPage('integration-complete.html')">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+      </svg>
+    </button>
+    
+    <!-- Profile/Company Icon (Active) -->
+    <button class="side-btn active">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"/>
+      </svg>
+    </button>
+  </div>
+  
+  <div id="avatarWrap" class="side-group pb-4 cursor-pointer">
+    <img id="avatarImg" src="profile.png" class="w-10 h-10 rounded-full object-cover" alt="">
+    <div id="avatarMenu"><a href="login.html">Log Out</a></div>
+  </div>
+</nav>
+
+<div class="wrapper">
+  <div class="column">
+
+    <!-- HEADER -->
+    <div class="profile-header">
+      <div class="flex items-center gap-3 mb-2">
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"/>
+        </svg>
+        <h1 class="text-3xl font-semibold">Profile & Company</h1>
+      </div>
+    </div>
+
+    <!-- PROFILE CONTENT -->
+    <div class="content-area">
+      <div class="profile-grid">
+        
+        <!-- Company Information Card -->
+        <div class="profile-card">
+          <div class="card-title">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+            </svg>
+            Company Information
+          </div>
+          
+          <div class="card-content">
+            <div id="companyInfo">
+              <div class="info-item">
+                <div class="info-label">Company Name</div>
+                <div class="info-value" id="displayCompanyName">Loading...</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Company URL</div>
+                <div class="info-value" id="displayCompanyURL">Loading...</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Domain</div>
+                <div class="info-value" id="displayDomain">Loading...</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Setup Date</div>
+                <div class="info-value" id="displaySetupDate">Loading...</div>
+              </div>
+            </div>
+
+            <!-- Edit Form -->
+            <div id="editCompanyForm" class="edit-form">
+              <div class="form-group">
+                <label class="form-label">Company Name</label>
+                <input type="text" id="editCompanyName" class="form-input" placeholder="EVE AI">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Company URL</label>
+                <input type="text" id="editCompanyURL" class="form-input" placeholder="joineve.ai">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Ideal Customer Profile</label>
+                <textarea id="editICP" class="form-input form-textarea" placeholder="Describe your ideal customers..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Your Role</label>
+                <input type="text" id="editRole" class="form-input" placeholder="Product Manager">
+              </div>
+              <div class="flex gap-3 mt-4">
+                <button class="btn btn-primary" onclick="saveCompanyInfo()">Save Changes</button>
+                <button class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
+              </div>
+            </div>
+
+            <div class="flex gap-3 mt-6" id="companyActions">
+              <button class="btn btn-primary" onclick="editCompanyInfo()">Edit Information</button>
+              <button class="btn btn-secondary" onclick="exportData()">Export Data</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account & Integrations Card -->
+        <div class="profile-card">
+          <div class="card-title">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+            </svg>
+            Connected Integrations
+          </div>
+          
+          <div class="card-content">
+            <div id="integrationsList">
+              <!-- Will be populated by JavaScript -->
+            </div>
+            
+            <div class="info-item">
+              <div class="info-label">Account Status</div>
+              <div class="info-value">Active</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Plan</div>
+              <div class="info-value">EVE Pro</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Last Login</div>
+              <div class="info-value" id="lastLogin">Today</div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+              <button class="btn btn-primary" onclick="goToPage('integration-complete.html')">Manage Integrations</button>
+              <button class="btn btn-secondary" onclick="refreshConnections()">Refresh Status</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Usage Statistics Card -->
+        <div class="profile-card">
+          <div class="card-title">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+            </svg>
+            Usage Statistics
+          </div>
+          
+          <div class="card-content">
+            <div class="info-item">
+              <div class="info-label">Active Tasks</div>
+              <div class="info-value">5 tasks</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Active Contacts</div>
+              <div class="info-value">12 contacts</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Revenue Pipeline</div>
+              <div class="info-value">$45K</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Emails Processed</div>
+              <div class="info-value">2,847 emails</div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+              <button class="btn btn-primary" onclick="goToPage('dashboard.html')">View Dashboard</button>
+              <button class="btn btn-secondary" onclick="downloadReport()">Download Report</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Support & Settings Card -->
+        <div class="profile-card">
+          <div class="card-title">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            Support & Settings
+          </div>
+          
+          <div class="card-content">
+            <div class="info-item">
+              <div class="info-label">EVE Version</div>
+              <div class="info-value">v2.1.0</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Support Status</div>
+              <div class="info-value">Premium Support</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Data Backup</div>
+              <div class="info-value">Last backup: Today</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Privacy Settings</div>
+              <div class="info-value">Configured</div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+              <button class="btn btn-primary" onclick="contactSupport()">Contact Support</button>
+              <button class="btn btn-secondary" onclick="viewPrivacySettings()">Privacy Settings</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ——— company & refs ——— */
+const COMPANY = localStorage.getItem('eve_company') || 'Your Company';
+const SITE_URL = localStorage.getItem('eve_url') || 'your-company.com';
+const avatarImg = document.getElementById('avatarImg');
+const avatarMenu = document.getElementById('avatarMenu');
+
+/* ——— navigation ——— */
+function goToPage(page) {
+  window.location.href = page;
+}
+
+/* ——— load company information ——— */
+function loadCompanyInfo() {
+  const companyName = localStorage.getItem('eve_company') || 'Not Set';
+  const companyURL = localStorage.getItem('eve_url') || 'Not Set';
+  const setupDate = localStorage.getItem('eve_setup_date') || new Date().toLocaleDateString();
+  
+  // Store setup date if not exists
+  if (!localStorage.getItem('eve_setup_date')) {
+    localStorage.setItem('eve_setup_date', new Date().toLocaleDateString());
+  }
+  
+  document.getElementById('displayCompanyName').textContent = companyName;
+  document.getElementById('displayCompanyURL').textContent = companyURL;
+  document.getElementById('displayDomain').textContent = companyURL.replace(/^https?:\/\/?/i,'').split('/')[0];
+  document.getElementById('displaySetupDate').textContent = setupDate;
+}
+
+/* ——— load integrations ——— */
+function loadIntegrations() {
+  const connectedServices = JSON.parse(localStorage.getItem('eve_connected_services') || '[]');
+  const allServices = ['google', 'microsoft', 'apple', 'slack'];
+  
+  let integrationsHtml = '';
+  
+  allServices.forEach(service => {
+    const isConnected = connectedServices.includes(service);
+    const status = isConnected ? 'connected' : 'disconnected';
+    const statusText = isConnected ? 'Connected' : 'Disconnected';
+    const serviceName = service.charAt(0).toUpperCase() + service.slice(1);
+    
+    integrationsHtml += `
+      <div class="integration-item">
+        <div class="flex-1">
+          <div class="font-medium">${serviceName}</div>
+        </div>
+        <div class="integration-status status-${status}">${statusText}</div>
+      </div>
+    `;
+  });
+  
+  document.getElementById('integrationsList').innerHTML = integrationsHtml;
+}
+
+/* ——— edit company info ——— */
+function editCompanyInfo() {
+  // Hide display and show form
+  document.getElementById('companyInfo').style.display = 'none';
+  document.getElementById('companyActions').style.display = 'none';
+  document.getElementById('editCompanyForm').style.display = 'block';
+  
+  // Populate form with current values
+  document.getElementById('editCompanyName').value = localStorage.getItem('eve_company') || '';
+  document.getElementById('editCompanyURL').value = localStorage.getItem('eve_url') || '';
+  document.getElementById('editICP').value = localStorage.getItem('eve_icp') || '';
+  document.getElementById('editRole').value = localStorage.getItem('eve_role') || '';
+}
+
+function saveCompanyInfo() {
+  // Save to localStorage
+  localStorage.setItem('eve_company', document.getElementById('editCompanyName').value);
+  localStorage.setItem('eve_url', document.getElementById('editCompanyURL').value);
+  localStorage.setItem('eve_icp', document.getElementById('editICP').value);
+  localStorage.setItem('eve_role', document.getElementById('editRole').value);
+  
+  // Update page title
+  const newCompany = document.getElementById('editCompanyName').value;
+  if (newCompany) {
+    document.title = `${newCompany} - Eve AI Profile`;
+  }
+  
+  // Reload display
+  loadCompanyInfo();
+  cancelEdit();
+  
+  // Show success feedback
+  alert('Company information updated successfully!');
+}
+
+function cancelEdit() {
+  // Show display and hide form
+  document.getElementById('companyInfo').style.display = 'block';
+  document.getElementById('companyActions').style.display = 'flex';
+  document.getElementById('editCompanyForm').style.display = 'none';
+}
+
+/* ——— other functions ——— */
+function exportData() {
+  const data = {
+    company: localStorage.getItem('eve_company'),
+    url: localStorage.getItem('eve_url'),
+    icp: localStorage.getItem('eve_icp'),
+    role: localStorage.getItem('eve_role'),
+    setupDate: localStorage.getItem('eve_setup_date'),
+    connectedServices: JSON.parse(localStorage.getItem('eve_connected_services') || '[]')
+  };
+  
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `eve-data-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function refreshConnections() {
+  loadIntegrations();
+  alert('Integration status refreshed!');
+}
+
+function downloadReport() {
+  alert('Generating usage report... This feature will be available soon.');
+}
+
+function contactSupport() {
+  window.open('mailto:support@joineve.ai?subject=Support Request&body=Hello EVE Support team,', '_blank');
+}
+
+function viewPrivacySettings() {
+  alert('Privacy settings panel will be available in the next version.');
+}
+
+/* ——— avatar dropdown ——— */
+avatarImg.onclick = e => {
+  e.stopPropagation();
+  avatarMenu.style.display = avatarMenu.style.display === 'block' ? 'none' : 'block';
+};
+
+document.addEventListener('click', e => {
+  if (!avatarMenu.contains(e.target) && e.target !== avatarImg) {
+    avatarMenu.style.display = 'none';
+  }
+});
+
+/* ——— update page title ——— */
+if (COMPANY !== 'Your Company') {
+  document.title = `${COMPANY} - Profile`;
+}
+
+/* ——— initialize page ——— */
+document.addEventListener('DOMContentLoaded', function() {
+  loadCompanyInfo();
+  loadIntegrations();
+});
+</script>
+
+</body>
+</html>

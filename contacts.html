@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Contacts - Eve AI</title>
+<script>
+// Update title with company name if available
+const companyName = localStorage.getItem('eve_company');
+if (companyName) {
+  document.title = `${companyName} - Eve AI Contacts`;
+}
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+:root{--w:100%}
+
+/* ——— base layout ——— */
+body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,#0A0A0A 90%,#000);color:#F4F4F5;font-family:Inter,sans-serif;overflow:hidden}
+.wrapper{margin-left:56px;padding:24px;height:100vh;display:flex;justify-content:flex-start;overflow:hidden}
+.column{width:100%;display:flex;flex-direction:column;height:100vh;justify-content:flex-start}
+
+/* ——— sidebar ——— */
+.sidebar{position:fixed;inset:0 auto 0 0;width:56px;background:#18181B;display:flex;flex-direction:column;justify-content:space-between;align-items:center}
+.side-group{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0}
+.side-btn{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:transparent;cursor:pointer;transition:background 0.2s;}
+.side-btn:hover{background:#3d3d43}
+.side-btn.active{background:#3d3d43}
+
+/* avatar dropdown */
+#avatarWrap{position:relative}
+#avatarMenu{position:absolute;bottom:60px;left:-20px;background:#2e2e33;border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:8px 0;min-width:140px;display:none}
+#avatarMenu a{display:block;padding:8px 16px;font-size:14px;color:#F4F4F5;text-decoration:none}
+#avatarMenu a:hover{background:rgba(255,255,255,.08)}
+
+/* ——— contacts content ——— */
+.contacts-header{margin-bottom:32px}
+.contacts-grid{display:flex;flex-direction:column;gap:24px;max-width:var(--w)}
+.contact-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:32px;transition:all 0.3s;position:relative;min-height:280px;}
+.contact-card:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}
+
+.contact-header{display:flex;justify-content:between;align-items:flex-start;margin-bottom:24px}
+.contact-info{flex:1}
+.contact-company{font-size:20px;font-weight:600;margin-bottom:6px}
+.contact-url{font-size:14px;color:#A1A1AA;margin-bottom:12px}
+.contact-person{font-size:15px;color:#F4F4F5}
+
+.message-icon{position:absolute;top:24px;right:24px;width:24px;height:24px;cursor:pointer;opacity:0.7;transition:opacity 0.2s}
+.message-icon:hover{opacity:1}
+
+.recent-tasks{margin:20px 0 24px 0}
+.recent-tasks h4{font-size:15px;font-weight:500;margin-bottom:12px}
+.task-item{font-size:14px;color:#C084FC;margin-bottom:6px;line-height:1.4}
+.task-item::before{content:"• ";margin-right:6px}
+
+.revenue-info{margin:16px 0 24px 0;font-size:15px;line-height:1.5}
+.revenue-amount{color:#34D399;font-weight:600}
+.confidence{color:#60A5FA;margin-left:16px}
+
+.contact-actions{display:flex;gap:12px;margin-top:20px}
+.btn{padding:10px 20px;font-size:14px;border-radius:8px;border:none;cursor:pointer;transition:all 0.2s}
+.btn-primary{background:#C026D3;color:#fff}
+.btn-primary:hover{background:#A21CAF}
+.btn-secondary{background:rgba(255,255,255,.08);color:#F4F4F5;border:1px solid rgba(255,255,255,.2)}
+.btn-secondary:hover{background:rgba(255,255,255,.12)}
+
+/* ——— contact details ——— */
+.contact-details{display:none}
+.back-btn{color:#C084FC;text-decoration:none;font-size:14px;margin-bottom:24px;display:inline-block}
+.back-btn:hover{color:#DDD6FE}
+
+.customer-profile{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px;margin-bottom:24px}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.profile-item{font-size:14px}
+.profile-label{color:#A1A1AA;margin-bottom:4px}
+.profile-value{color:#F4F4F5;font-weight:500}
+
+.next-action{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px;font-size:13px;color:#A1A1AA}
+
+.section{margin-bottom:32px}
+.section-title{font-size:16px;font-weight:600;margin-bottom:16px}
+.executive-summary{font-size:14px;line-height:1.6;color:#E5E5E5}
+.summary-detail{margin-bottom:12px}
+
+.active-task{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:16px;margin-bottom:16px}
+.task-title{font-size:15px;font-weight:500;margin-bottom:8px}
+.task-description{font-size:13px;color:#A1A1AA;line-height:1.5;margin-bottom:12px}
+.task-status{font-size:12px;color:#34D399}
+
+.source-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px;margin-bottom:12px}
+.source-title{font-size:14px;color:#F59E0B;margin-bottom:4px}
+.source-subtitle{font-size:12px;color:#A1A1AA}
+
+/* ——— content area ——— */
+.content-area{overflow-y:auto;flex:1;scrollbar-width:none;min-height:0;padding-bottom:20px}
+.content-area::-webkit-scrollbar{display:none}
+
+/* ——— util ——— */
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="side-group">
+    <img src="front.png" class="w-10" alt="EVE">
+    
+    <!-- Dashboard Icon -->
+    <button class="side-btn" onclick="goToPage('dashboard.html')">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 12a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1v-4zM11 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM11 12a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/>
+      </svg>
+    </button>
+    
+    <!-- Tasks Icon -->
+    <button class="side-btn" onclick="goToPage('report.html')">
+      <img src="icon.png" class="w-5" alt="Tasks">
+    </button>
+    
+    <!-- Contact List Icon (Active) -->
+    <button class="side-btn active">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+      </svg>
+    </button>
+    
+    <!-- Integrations Icon -->
+    <button class="side-btn" onclick="goToPage('integration-complete.html')">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+      </svg>
+    </button>
+    
+    <!-- Profile/Company Icon -->
+    <button class="side-btn" onclick="goToPage('profile.html')">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"/>
+      </svg>
+    </button>
+  </div>
+  
+  <div id="avatarWrap" class="side-group pb-4 cursor-pointer">
+    <img id="avatarImg" src="profile.png" class="w-10 h-10 rounded-full object-cover" alt="">
+    <div id="avatarMenu"><a href="login.html">Log Out</a></div>
+  </div>
+</nav>
+
+<div class="wrapper">
+  <div class="column">
+
+    <!-- CONTACTS LIST VIEW -->
+    <div id="contactsList">
+      <!-- HEADER -->
+      <div class="contacts-header">
+        <div class="flex items-center gap-3 mb-2">
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+          </svg>
+          <h1 class="text-3xl font-semibold">Contacts</h1>
+        </div>
+      </div>
+
+      <!-- CONTACTS CONTENT -->
+      <div class="content-area">
+        <div class="contacts-grid">
+          
+          <!-- Contact Card 1 -->
+          <div class="contact-card" data-contact="boots">
+            <div class="contact-header">
+              <div class="contact-info">
+                <div class="contact-company">Boots Digital Health</div>
+                <div class="contact-url">🌐 bootsdigitalhealth.co.uk</div>
+                <div class="contact-person">👤 Adam Brown - Head of Digital Health Innovation</div>
+              </div>
+              <img src="icon.png" class="message-icon" onclick="showContactDetails('boots')" alt="Message">
+            </div>
+            
+            <div class="recent-tasks">
+              <h4>Recent Tasks:</h4>
+              <div class="task-item">Follow Up on Upcoming Partnership - Healthcare digital transformation initiative</div>
+              <div class="task-item">Schedule Q4 Review Meeting - Quarterly business review and planning session</div>
+              <div class="task-item">Product Demo Preparation - Customize demo for 8 medical facilities requirements</div>
+            </div>
+            
+            <div class="revenue-info">
+              <div><span>Revenue: <span class="revenue-amount">$3,000-$10,000+ annually</span></span></div>
+              <div><span class="confidence">Confidence: 80%</span> <span style="color: #A1A1AA;">• Last Contact: 2 days ago</span></div>
+              <div style="margin-top: 8px; color: #A1A1AA; font-size: 13px;">Healthcare & Medical ICP • 8 facilities • High engagement</div>
+            </div>
+            
+            <div class="contact-actions">
+              <button class="btn btn-primary" onclick="showContactDetails('boots')">View Details</button>
+              <button class="btn btn-secondary">Add Task</button>
+              <button class="btn btn-secondary">Send Email</button>
+            </div>
+          </div>
+
+          <!-- Contact Card 2 -->
+          <div class="contact-card" data-contact="zarges">
+            <div class="contact-header">
+              <div class="contact-info">
+                <div class="contact-company">Zarges USA</div>
+                <div class="contact-url">🌐 zargesusa.com</div>
+                <div class="contact-person">👤 Jamie Fergus - Business Development Specialist</div>
+              </div>
+              <img src="icon.png" class="message-icon" onclick="showContactDetails('zarges')" alt="Message">
+            </div>
+            
+            <div class="recent-tasks">
+              <h4>Recent Tasks:</h4>
+              <div class="task-item">Deliver Product Demo April 21st - Lead capture system for trade shows</div>
+              <div class="task-item">Follow up on trade show requirements - Annual event planning and logistics</div>
+              <div class="task-item">Pricing Discussion - Custom package for 12 events per year</div>
+            </div>
+            
+            <div class="revenue-info">
+              <div><span>Revenue: <span class="revenue-amount">$5,000-$15,000+ annually</span></span></div>
+              <div><span class="confidence">Confidence: 85%</span> <span style="color: #A1A1AA;">• Last Contact: 1 day ago</span></div>
+              <div style="margin-top: 8px; color: #A1A1AA; font-size: 13px;">Manufacturing & Industrial ICP • 12 trade shows • Demo scheduled</div>
+            </div>
+            
+            <div class="contact-actions">
+              <button class="btn btn-primary" onclick="showContactDetails('zarges')">View Details</button>
+              <button class="btn btn-secondary">Add Task</button>
+              <button class="btn btn-secondary">Send Email</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACT DETAILS VIEW -->
+    <div id="contactDetails" class="contact-details">
+      <a href="#" class="back-btn" onclick="showContactsList()">← Back to Contacts</a>
+      
+      <h1 class="text-3xl font-semibold mb-6">Contact Details</h1>
+      
+      <div class="content-area">
+        <!-- Customer Profile -->
+        <div class="customer-profile">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold flex items-center gap-2">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+              </svg>
+              Customer Profile
+            </h3>
+            <button class="text-sm text-purple-400 hover:text-purple-300">Show</button>
+          </div>
+          
+          <div class="profile-grid" id="profileGrid">
+            <!-- Will be populated by JavaScript -->
+          </div>
+          
+          <div class="next-action" id="nextAction">
+            <!-- Will be populated by JavaScript -->
+          </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <div class="section">
+          <h3 class="section-title">Executive Summary</h3>
+          <div class="executive-summary" id="executiveSummary">
+            <!-- Will be populated by JavaScript -->
+          </div>
+        </div>
+
+        <!-- Active Tasks -->
+        <div class="section">
+          <h3 class="section-title">Active Tasks</h3>
+          <div id="activeTasks">
+            <!-- Will be populated by JavaScript -->
+          </div>
+        </div>
+
+        <!-- Source Materials -->
+        <div class="section">
+          <h3 class="section-title">Source Materials</h3>
+          <div id="sourceMaterials">
+            <!-- Will be populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ——— company & refs ——— */
+const COMPANY = localStorage.getItem('eve_company') || 'Your Company';
+const avatarImg = document.getElementById('avatarImg');
+const avatarMenu = document.getElementById('avatarMenu');
+
+/* ——— navigation ——— */
+function goToPage(page) {
+  window.location.href = page;
+}
+
+/* ——— contact data ——— */
+const contactsData = {
+  boots: {
+    company: 'Boots Digital Health',
+    domain: 'bootsdigitalhealth.co.uk',
+    contact: 'Adam Brown',
+    role: 'Head of Digital Health Innovation',
+    nextAction: 'Next: Follow Up on Upcoming Partnership →',
+    summary: {
+      clientName: 'bootsdigitalhealth.co.uk',
+      clientType: 'Manufacturing & Industrial (Potential Customer)',
+      date: '2025-04-16',
+      status: 'Potential client, highly engaged and ready for next steps',
+      description: 'Boots Digital Health, represented by Adam Brown (Head of Digital Health Innovation), has expressed strong interest in our healthcare solutions for use at approximately 8 medical facilities per year. The client has requested a product demo and confirmed availability for a meeting on April 21st at 11:00 AM ET.',
+      details: 'There are no signs of product concerns, pricing discomfort, or churn signals. The client fits the Healthcare & Medical ICP, as they are seeking to modernize health data across multiple facilities, which aligns with our value proposition for this segment.',
+      revenue: '$3,000-$10,000+ annually (estimate based on 8 facilities/year)',
+      confidence: '80%'
+    },
+    tasks: [
+      {
+        title: 'Schedule and Deliver Product Demo for Boots Digital Health',
+        description: 'Confirm and conduct the product demo for Boots Digital Health on April 21st at 11:00 AM ET, ensuring all key stakeholders are invited and prepared to address their needs for healthcare data modernization across 8 medical facilities.',
+        status: 'Active'
+      }
+    ],
+    sources: [
+      {
+        title: 'RE: Healthcare - Digital Health System for Medical Facilities (Demo Confirmation)',
+        subtitle: 'Email thread with demo confirmation'
+      },
+      {
+        title: 'RE: Healthcare - Digital Health System for Medical Facilities (Demo Request)',
+        subtitle: 'Initial demo request email'
+      }
+    ]
+  },
+  zarges: {
+    company: 'Zarges USA',
+    domain: 'zargesusa.com',
+    contact: 'Jamie Fergus',
+    role: 'Business Development Specialist',
+    nextAction: 'Next: Follow Up on Upcoming Partnership →',
+    summary: {
+      clientName: 'zargesusa.com',
+      clientType: 'Manufacturing & Industrial (Potential Customer)',
+      date: '2025-04-16',
+      status: 'Potential client, highly engaged and ready for next steps',
+      description: 'Zarges USA, represented by Jamie Fergus (Business Development Specialist), has expressed strong interest in Leadature\'s lead capture system for use at approximately 12 trade shows per year. The client has requested a product demo and confirmed availability for a meeting on April 21st at 11:00 AM ET.',
+      details: 'There are no signs of product concerns, pricing discomfort, or churn signals. The client fits the Manufacturing & Industrial ICP, as they are seeking to modernize lead capture across multiple events, which aligns with Leadature\'s value proposition for this segment.',
+      revenue: '$3,000-$10,000+ annually (estimate based on 12 events/year)',
+      confidence: '80%'
+    },
+    tasks: [
+      {
+        title: 'Schedule and Deliver Product Demo for Zarges USA',
+        description: 'Confirm and conduct the product demo for Zarges USA on April 21st at 11:00 AM ET, ensuring all key stakeholders are invited and prepared to address their needs for lead capture across 12 annual trade shows.',
+        status: 'Active'
+      }
+    ],
+    sources: [
+      {
+        title: 'RE: Leadature - Lead Capture System for Tradeshows (Demo Confirmation)',
+        subtitle: 'Email thread with demo confirmation'
+      },
+      {
+        title: 'RE: Leadature - Lead Capture System for Tradeshows (Demo Request)',
+        subtitle: 'Initial demo request email'
+      }
+    ]
+  }
+};
+
+/* ——— view switching ——— */
+function showContactsList() {
+  document.getElementById('contactsList').style.display = 'block';
+  document.getElementById('contactDetails').style.display = 'none';
+}
+
+function showContactDetails(contactId) {
+  const contact = contactsData[contactId];
+  if (!contact) return;
+  
+  // Hide contacts list, show details
+  document.getElementById('contactsList').style.display = 'none';
+  document.getElementById('contactDetails').style.display = 'block';
+  
+  // Populate profile
+  document.getElementById('profileGrid').innerHTML = `
+    <div class="profile-item">
+      <div class="profile-label">Company</div>
+      <div class="profile-value">${contact.company}</div>
+    </div>
+    <div class="profile-item">
+      <div class="profile-label">Domain</div>
+      <div class="profile-value">${contact.domain}</div>
+    </div>
+    <div class="profile-item">
+      <div class="profile-label">Contact</div>
+      <div class="profile-value">${contact.contact}</div>
+    </div>
+    <div class="profile-item">
+      <div class="profile-label">Role</div>
+      <div class="profile-value">${contact.role}</div>
+    </div>
+  `;
+  
+  // Populate next action
+  document.getElementById('nextAction').textContent = contact.nextAction;
+  
+  // Populate executive summary
+  document.getElementById('executiveSummary').innerHTML = `
+    <div class="summary-detail"><strong>Client Name:</strong> ${contact.summary.clientName}</div>
+    <div class="summary-detail"><strong>Client Type:</strong> ${contact.summary.clientType}</div>
+    <div class="summary-detail"><strong>Date:</strong> ${contact.summary.date}</div>
+    <div class="summary-detail"><strong>Client Status:</strong> ${contact.summary.status}</div>
+    <div class="summary-detail" style="margin-top: 16px;">${contact.summary.description}</div>
+    <div class="summary-detail" style="margin-top: 12px;">${contact.summary.details}</div>
+    <div class="summary-detail" style="margin-top: 16px;"><strong>Revenue Potential:</strong> ${contact.summary.revenue}</div>
+    <div class="summary-detail"><strong>Confidence to Close:</strong> ${contact.summary.confidence}</div>
+  `;
+  
+  // Populate active tasks
+  let tasksHtml = '';
+  contact.tasks.forEach(task => {
+    tasksHtml += `
+      <div class="active-task">
+        <div class="task-title">${task.title}</div>
+        <div class="task-description">${task.description}</div>
+        <div class="flex justify-between items-center">
+          <div class="task-status">Status: ${task.status}</div>
+          <button class="text-sm text-purple-400 hover:text-purple-300">View Details →</button>
+        </div>
+      </div>
+    `;
+  });
+  document.getElementById('activeTasks').innerHTML = tasksHtml;
+  
+  // Populate source materials
+  let sourcesHtml = '';
+  contact.sources.forEach(source => {
+    sourcesHtml += `
+      <div class="source-item">
+        <div class="source-title">📧 ${source.title}</div>
+        <div class="source-subtitle">${source.subtitle}</div>
+      </div>
+    `;
+  });
+  document.getElementById('sourceMaterials').innerHTML = sourcesHtml;
+}
+
+/* ——— avatar dropdown ——— */
+avatarImg.onclick = e => {
+  e.stopPropagation();
+  avatarMenu.style.display = avatarMenu.style.display === 'block' ? 'none' : 'block';
+};
+
+document.addEventListener('click', e => {
+  if (!avatarMenu.contains(e.target) && e.target !== avatarImg) {
+    avatarMenu.style.display = 'none';
+  }
+});
+
+/* ——— update page title ——— */
+if (COMPANY !== 'Your Company') {
+  document.title = `${COMPANY} - Contacts`;
+}
+</script>
+
+</body>
+</html>

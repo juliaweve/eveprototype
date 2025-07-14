@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Integrations - Eve AI</title>
+<script>
+// Update title with company name if available
+const companyName = localStorage.getItem('eve_company');
+if (companyName) {
+  document.title = `${companyName} - Eve AI Integrations`;
+}
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+:root{--w:100%}
+
+/* ——— base layout ——— */
+body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,#0A0A0A 90%,#000);color:#F4F4F5;font-family:Inter,sans-serif;overflow:hidden}
+.wrapper{margin-left:56px;padding:24px;height:100vh;display:flex;justify-content:center;align-items:center;overflow:hidden}
+.column{width:100%;display:flex;flex-direction:column;height:100vh;justify-content:center;align-items:center}
+
+/* ——— sidebar ——— */
+.sidebar{position:fixed;inset:0 auto 0 0;width:56px;background:#18181B;display:flex;flex-direction:column;justify-content:space-between;align-items:center}
+.side-group{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0}
+.side-btn{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:transparent;cursor:pointer;transition:background 0.2s;}
+.side-btn:hover{background:#3d3d43}
+.side-btn.active{background:#3d3d43}
+
+/* avatar dropdown */
+#avatarWrap{position:relative}
+#avatarMenu{position:absolute;bottom:60px;left:-20px;background:#2e2e33;border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:8px 0;min-width:140px;display:none}
+#avatarMenu a{display:block;padding:8px 16px;font-size:14px;color:#F4F4F5;text-decoration:none}
+#avatarMenu a:hover{background:rgba(255,255,255,.08)}
+
+/* ——— integration content ——— */
+.panel{background:rgba(255,255,255,.07);backdrop-filter:blur(40px);border:1px solid rgba(255,255,255,.1);}
+.inner-section{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);}
+.service-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);transition:all 0.3s;}
+.service-card:hover{background:rgba(255,255,255,.08);border-color:rgba(196,38,211,0.3);}
+.connect-btn{background:rgba(196,38,211,0.8);transition:all 0.2s;}
+.connect-btn:hover{background:rgba(196,38,211,1);}
+.connect-btn.connected{background:rgba(34,197,94,0.8);}
+.connect-btn.connected:hover{background:rgba(34,197,94,1);}
+.checkbox-custom{
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 4px;
+  background: rgba(255,255,255,0.1);
+  position: relative;
+  cursor: pointer;
+}
+.checkbox-custom:checked {
+  background: #C026D3;
+  border-color: #C026D3;
+}
+.checkbox-custom:checked::after {
+  content: '✓';
+  position: absolute;
+  top: -2px;
+  left: 2px;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+.continue-btn{
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  transition: all 0.3s;
+}
+.continue-btn:hover{
+  background: rgba(255,255,255,0.15);
+}
+.continue-btn.active{
+  background: #C026D3;
+  border-color: #C026D3;
+}
+
+/* ——— util ——— */
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="side-group">
+    <img src="front.png" class="w-10" alt="EVE">
+    
+    <!-- Dashboard Icon -->
+    <button class="side-btn" onclick="goToPage('dashboard.html')">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M3 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 12a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1v-4zM11 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM11 12a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/>
+      </svg>
+    </button>
+    
+    <!-- Tasks Icon -->
+    <button class="side-btn" onclick="goToPage('report.html')">
+      <img src="icon.png" class="w-5" alt="Tasks">
+    </button>
+    
+    <!-- Contact List Icon -->
+    <button class="side-btn" onclick="goToPage('contacts.html')">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+      </svg>
+    </button>
+    
+    <!-- Integrations Icon (Active) -->
+    <button class="side-btn active">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+      </svg>
+    </button>
+    
+    <!-- Profile/Company Icon -->
+    <button class="side-btn" onclick="goToPage('profile.html')">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"/>
+      </svg>
+    </button>
+  </div>
+  
+  <div id="avatarWrap" class="side-group pb-4 cursor-pointer">
+    <img id="avatarImg" src="profile.png" class="w-10 h-10 rounded-full object-cover" alt="">
+    <div id="avatarMenu"><a href="login.html">Log Out</a></div>
+  </div>
+</nav>
+
+<div class="wrapper">
+  <div class="column">
+    
+    <!-- EVE Avatar and Message -->
+    <div class="flex items-start gap-3 mb-6">
+      <img src="download.png" alt="EVE" class="h-10 w-auto mt-1 flex-shrink-0">
+      <div class="panel rounded-2xl rounded-tl-sm p-4 text-sm max-w-lg">
+        Great! Now let's get your email, calendar and contacts hooked up. I can be of great 
+        help if I am connected to all of your accounts.
+      </div>
+    </div>
+
+    <!-- Integration Content -->
+    <div class="w-full max-w-3xl space-y-6">
+
+      <!-- Feature Checkboxes -->
+      <div class="panel rounded-2xl p-6 space-y-4">
+        <div class="flex items-center gap-3">
+          <input type="checkbox" class="checkbox-custom" checked disabled>
+          <span class="text-sm">Email Access to look for next best actions</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <input type="checkbox" class="checkbox-custom" checked disabled>
+          <span class="text-sm">Calendar Access to see who you've met with</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <input type="checkbox" class="checkbox-custom" checked disabled>
+          <span class="text-sm">Contacts to use people's names instead of just emails</span>
+        </div>
+      </div>
+
+      <!-- Connection Services -->
+      <div class="space-y-4">
+        <h2 class="text-lg font-semibold text-center">Connect an Account</h2>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Google -->
+          <div class="service-card rounded-2xl p-6 flex flex-col items-center space-y-3">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-10 h-10" alt="Google">
+            <span class="font-medium text-sm">Google</span>
+            <button class="connect-btn w-full py-2 px-4 rounded-lg font-medium text-sm text-white" 
+                    onclick="connectService(this, 'google')">
+              Connect
+            </button>
+          </div>
+
+          <!-- Microsoft -->
+          <div class="service-card rounded-2xl p-6 flex flex-col items-center space-y-3">
+            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/microsoft.svg" 
+                 class="w-10 h-10 invert" alt="Microsoft">
+            <span class="font-medium text-sm">Microsoft</span>
+            <button class="connect-btn w-full py-2 px-4 rounded-lg font-medium text-sm text-white" 
+                    onclick="connectService(this, 'microsoft')">
+              Connect
+            </button>
+          </div>
+
+          <!-- Apple -->
+          <div class="service-card rounded-2xl p-6 flex flex-col items-center space-y-3">
+            <svg class="w-10 h-10 fill-white" viewBox="0 0 24 24">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+            </svg>
+            <span class="font-medium text-sm">Apple</span>
+            <button class="connect-btn w-full py-2 px-4 rounded-lg font-medium text-sm text-white" 
+                    onclick="connectService(this, 'apple')">
+              Connect
+            </button>
+          </div>
+
+          <!-- Slack -->
+          <div class="service-card rounded-2xl p-6 flex flex-col items-center space-y-3">
+            <svg class="w-10 h-10 fill-white" viewBox="0 0 24 24">
+              <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/>
+            </svg>
+            <span class="font-medium text-sm">Slack</span>
+            <button class="connect-btn w-full py-2 px-4 rounded-lg font-medium text-sm text-white" 
+                    onclick="connectService(this, 'slack')">
+              Connect
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Continue Button -->
+      <div class="flex flex-col items-center space-y-3 pt-4">
+        <button id="continueBtn" class="continue-btn w-full py-3 px-6 rounded-xl font-medium flex items-center justify-center gap-2 relative" 
+                onclick="continueToDashboard()" disabled>
+          Continue
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </button>
+        
+        <!-- Requirement Notice -->
+        <div class="flex items-center gap-2 text-xs text-white/60 text-center">
+          <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+          </svg>
+          <span>You need to integrate at least one application to proceed.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ——— company & refs ——— */
+const COMPANY = localStorage.getItem('eve_company') || 'Your Company';
+const avatarImg = document.getElementById('avatarImg');
+const avatarMenu = document.getElementById('avatarMenu');
+
+let connectedServices = [];
+
+/* ——— navigation ——— */
+function goToPage(page) {
+  window.location.href = page;
+}
+
+/* ——— connect service functionality ——— */
+function connectService(button, serviceName) {
+  // Simulate connection process
+  button.textContent = 'Connecting...';
+  button.disabled = true;
+  
+  setTimeout(() => {
+    // Mark as connected
+    button.textContent = 'Connected';
+    button.classList.add('connected');
+    button.disabled = false;
+    
+    // Add to connected services if not already there
+    if (!connectedServices.includes(serviceName)) {
+      connectedServices.push(serviceName);
+    }
+    
+    // Update continue button state
+    updateContinueButton();
+    
+    // Show visual feedback
+    const card = button.closest('.service-card');
+    card.style.borderColor = 'rgba(34,197,94,0.5)';
+    
+  }, 2000);
+}
+
+function updateContinueButton() {
+  const continueBtn = document.getElementById('continueBtn');
+  
+  if (connectedServices.length > 0) {
+    continueBtn.disabled = false;
+    continueBtn.classList.add('active');
+  } else {
+    continueBtn.disabled = true;
+    continueBtn.classList.remove('active');
+  }
+}
+
+function continueToDashboard() {
+  if (connectedServices.length > 0) {
+    // Store connected services
+    localStorage.setItem('eve_connected_services', JSON.stringify(connectedServices));
+    
+    // Redirect to the main dashboard
+    window.location.href = 'dashboard.html';
+  }
+}
+
+/* ——— avatar dropdown ——— */
+avatarImg.onclick = e => {
+  e.stopPropagation();
+  avatarMenu.style.display = avatarMenu.style.display === 'block' ? 'none' : 'block';
+};
+
+document.addEventListener('click', e => {
+  if (!avatarMenu.contains(e.target) && e.target !== avatarImg) {
+    avatarMenu.style.display = 'none';
+  }
+});
+
+/* ——— update page title ——— */
+if (COMPANY !== 'Your Company') {
+  document.title = `${COMPANY} - Integrations`;
+}
+
+// Update continue button state on page load
+updateContinueButton();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Invite Coworkers - EVE</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  /* Using Image 1 darker gradient colors */
+  body{background:radial-gradient(ellipse at top,#71428A 0%,#0A0A0A 90%,#000 100%);}
+  .modal{background:rgba(255,255,255,.07);backdrop-filter:blur(40px);border:1px solid rgba(255,255,255,.1);}
+  .inner-section{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);}
+  .email-row{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);}
+  .email-input{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);}
+  .email-input:focus{border-color:rgba(196,38,211,0.5);outline:none;}
+  .btn-primary{background:#C026D3;transition:all 0.2s;}
+  .btn-primary:hover{background:#A21CAF;}
+  .btn-secondary{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);transition:all 0.2s;}
+  .btn-secondary:hover{background:rgba(255,255,255,.12);}
+  .link-input{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);}
+  .action-link{color:rgba(255,255,255,0.7);font-size:12px;cursor:pointer;transition:color 0.2s;}
+  .action-link:hover{color:rgba(255,255,255,1);}
+  .checkbox-custom{
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #C026D3;
+    border-radius: 3px;
+    background: transparent;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .checkbox-custom:checked {
+    background: #C026D3;
+  }
+  .checkbox-custom:checked::after {
+    content: '✓';
+    position: absolute;
+    top: -2px;
+    left: 1px;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 text-white">
+
+  <div class="modal rounded-3xl p-8 w-full max-w-3xl space-y-6">
+    
+    <!-- Header -->
+    <div class="flex items-center gap-3">
+      <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+        <path d="M6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+      </svg>
+      <h1 class="text-lg font-semibold">Invite your Coworkers to EVE!</h1>
+    </div>
+
+    <!-- Description -->
+    <div class="space-y-3">
+      <p class="text-sm text-white/80 leading-relaxed">
+        EVE improves with more users and context. Invite your <span id="companyNameText">[CompanyName]</span> colleagues to join and make EVE work better for your whole team.
+      </p>
+      <p class="text-sm text-white/70 leading-relaxed">
+        I found these <span id="companyNameText2">[CompanyName]</span> colleagues. Add anyone missing to maximize EVE's value.
+      </p>
+    </div>
+
+    <!-- Coworkers Section -->
+    <div class="inner-section rounded-2xl p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-medium">Coworkers invited by EVE</h3>
+        <div class="flex gap-4">
+          <button id="selectAllBtn" class="action-link">Select All</button>
+          <button id="clearAllBtn" class="action-link">Clear All</button>
+        </div>
+      </div>
+
+      <!-- Email List -->
+      <div class="space-y-2" id="emailList">
+        <!-- Pre-discovered emails will be populated here -->
+      </div>
+
+      <!-- Add others input -->
+      <div class="flex gap-2">
+        <input id="newEmailInput" type="email" placeholder="Add others..." 
+               class="email-input flex-1 rounded-lg px-3 py-2.5 text-sm text-white placeholder-white/50">
+        <button id="addEmailBtn" class="btn-primary rounded-lg px-4 py-2.5 text-sm font-medium">
+          +
+        </button>
+      </div>
+    </div>
+
+    <!-- Send Invites Button -->
+    <button id="sendInvitesBtn" class="btn-primary w-full py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+      </svg>
+      Send Invites
+    </button>
+
+    <!-- Share Link Section -->
+    <div class="space-y-3">
+      <p class="text-sm text-white/70">Refer via link</p>
+      <div class="flex gap-2">
+        <input id="referralLink" type="text" readonly value="https://joineve.ai/ref=aYvZ223" 
+               class="link-input flex-1 rounded-lg px-3 py-2.5 text-sm text-white/80 cursor-pointer"
+               onclick="this.select()">
+        <button id="copyLinkBtn" class="btn-secondary rounded-lg px-4 py-2.5 text-sm font-medium flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+          </svg>
+          Copy Link
+        </button>
+      </div>
+    </div>
+
+    <!-- Skip Option -->
+    <div class="text-center pt-2">
+      <button id="skipBtn" class="text-sm text-white/60 hover:text-white/80 underline">
+        Skip for Now
+      </button>
+    </div>
+
+  </div>
+
+<script>
+// Get company data from localStorage
+const COMPANY = localStorage.getItem('eve_company') || 'YourCompany';
+const SITE_URL = localStorage.getItem('eve_url') || 'yourcompany.com';
+const domain = SITE_URL.replace(/^https?:\/\/?/i,'').split('/')[0];
+
+// Update company name in text
+document.getElementById('companyNameText').textContent = COMPANY;
+document.getElementById('companyNameText2').textContent = COMPANY;
+
+// Pre-discovered emails based on company domain
+let allEmails = [
+  `hadj@${domain}`,
+  `mudra@${domain}`
+];
+
+let selectedEmails = new Set(allEmails); // Start with all pre-discovered emails selected
+
+// Create email row element
+function createEmailRow(email) {
+  const row = document.createElement('div');
+  row.className = 'email-row rounded-lg px-3 py-2.5 flex items-center justify-between';
+  row.setAttribute('data-email', email);
+  
+  row.innerHTML = `
+    <div class="flex items-center gap-3">
+      <input type="checkbox" class="checkbox-custom" ${selectedEmails.has(email) ? 'checked' : ''} 
+             onchange="toggleEmailSelection('${email}')">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center text-xs font-medium">
+          ${email.charAt(0).toUpperCase()}
+        </div>
+        <span class="text-sm">${email}</span>
+      </div>
+    </div>
+    <button onclick="removeEmail('${email}')" class="text-white/40 hover:text-white/80 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  `;
+  
+  return row;
+}
+
+// Render all emails
+function renderEmails() {
+  const container = document.getElementById('emailList');
+  container.innerHTML = '';
+  
+  allEmails.forEach(email => {
+    container.appendChild(createEmailRow(email));
+  });
+  
+  updateSendButton();
+}
+
+// Toggle email selection
+function toggleEmailSelection(email) {
+  if (selectedEmails.has(email)) {
+    selectedEmails.delete(email);
+  } else {
+    selectedEmails.add(email);
+  }
+  updateSendButton();
+}
+
+// Remove email from list
+function removeEmail(email) {
+  selectedEmails.delete(email);
+  const index = allEmails.indexOf(email);
+  if (index > -1) {
+    allEmails.splice(index, 1);
+  }
+  renderEmails();
+}
+
+// Update send button text
+function updateSendButton() {
+  const btn = document.getElementById('sendInvitesBtn');
+  const count = selectedEmails.size;
+  
+  if (count === 0) {
+    btn.innerHTML = `
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+      </svg>
+      Send Invites
+    `;
+  } else {
+    btn.innerHTML = `
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+      </svg>
+      Send ${count} Invite${count > 1 ? 's' : ''}
+    `;
+  }
+}
+
+// Add new email functionality
+document.getElementById('addEmailBtn').addEventListener('click', function() {
+  const input = document.getElementById('newEmailInput');
+  const email = input.value.trim();
+  
+  // Basic email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
+  if (email && emailRegex.test(email) && !allEmails.includes(email)) {
+    allEmails.push(email);
+    selectedEmails.add(email);
+    input.value = '';
+    renderEmails();
+    
+    // Visual feedback
+    const btn = this;
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '✓';
+    setTimeout(() => {
+      btn.innerHTML = originalHTML;
+    }, 500);
+  } else if (allEmails.includes(email)) {
+    // Email already exists - show feedback
+    const btn = this;
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '!';
+    btn.style.background = '#EF4444';
+    setTimeout(() => {
+      btn.innerHTML = originalHTML;
+      btn.style.background = '#C026D3';
+    }, 1000);
+  } else if (!emailRegex.test(email)) {
+    // Invalid email format
+    input.style.borderColor = '#EF4444';
+    setTimeout(() => {
+      input.style.borderColor = 'rgba(255,255,255,.15)';
+    }, 1000);
+  }
+});
+
+// Enter key for adding email
+document.getElementById('newEmailInput').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    document.getElementById('addEmailBtn').click();
+  }
+});
+
+// Clear red border on focus
+document.getElementById('newEmailInput').addEventListener('focus', function() {
+  this.style.borderColor = 'rgba(196,38,211,0.5)';
+});
+
+document.getElementById('newEmailInput').addEventListener('blur', function() {
+  this.style.borderColor = 'rgba(255,255,255,.15)';
+});
+
+// Select All functionality
+document.getElementById('selectAllBtn').addEventListener('click', function() {
+  allEmails.forEach(email => selectedEmails.add(email));
+  renderEmails();
+});
+
+// Clear All functionality
+document.getElementById('clearAllBtn').addEventListener('click', function() {
+  selectedEmails.clear();
+  renderEmails();
+});
+
+// Send invites functionality
+document.getElementById('sendInvitesBtn').addEventListener('click', function() {
+  if (selectedEmails.size > 0) {
+    const btn = this;
+    const originalHTML = btn.innerHTML;
+    
+    btn.innerHTML = 'Sending...';
+    btn.disabled = true;
+    
+    setTimeout(() => {
+      btn.innerHTML = '✓ Invites Sent!';
+      setTimeout(() => {
+        window.location.href = 'report.html';
+      }, 1500);
+    }, 2000);
+  }
+});
+
+// Copy link functionality
+document.getElementById('copyLinkBtn').addEventListener('click', function() {
+  const link = document.getElementById('referralLink');
+  link.select();
+  document.execCommand('copy');
+  
+  const btn = this;
+  const originalHTML = btn.innerHTML;
+  btn.innerHTML = `
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+    </svg>
+    Copied!
+  `;
+  
+  setTimeout(() => {
+    btn.innerHTML = originalHTML;
+  }, 2000);
+});
+
+// Skip functionality
+document.getElementById('skipBtn').addEventListener('click', function() {
+  window.location.href = 'report.html';
+});
+
+// Initial render
+renderEmails();
+</script>
+
+</body>
+</html>
