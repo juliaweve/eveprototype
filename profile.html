@@ -95,7 +95,7 @@ body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,
     <!-- Contact List Icon -->
     <button class="side-btn" onclick="goToPage('contacts.html')">
       <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.05-.33.07-.66.07-1a7 7 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
       </svg>
     </button>
     
@@ -192,7 +192,6 @@ body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,
 
             <div class="flex gap-3 mt-6" id="companyActions">
               <button class="btn btn-primary" onclick="editCompanyInfo()">Edit Information</button>
-              <button class="btn btn-secondary" onclick="exportData()">Export Data</button>
             </div>
           </div>
         </div>
@@ -260,7 +259,6 @@ body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,
 
             <div class="flex gap-3 mt-6">
               <button class="btn btn-primary" onclick="goToPage('dashboard.html')">View Dashboard</button>
-              <button class="btn btn-secondary" onclick="downloadReport()">Download Report</button>
             </div>
           </div>
         </div>
@@ -288,13 +286,9 @@ body{margin:0;height:100vh;background:radial-gradient(ellipse at top,#71428A 0%,
               <div class="info-value">Last backup: Today</div>
             </div>
             <div class="info-item">
-              <div class="info-label">Privacy Settings</div>
-              <div class="info-value">Configured</div>
             </div>
 
             <div class="flex gap-3 mt-6">
-              <button class="btn btn-primary" onclick="contactSupport()">Contact Support</button>
-              <button class="btn btn-secondary" onclick="viewPrivacySettings()">Privacy Settings</button>
             </div>
           </div>
         </div>
@@ -336,7 +330,7 @@ function loadCompanyInfo() {
 /* ——— load integrations ——— */
 function loadIntegrations() {
   const connectedServices = JSON.parse(localStorage.getItem('eve_connected_services') || '[]');
-  const allServices = ['google', 'microsoft', 'apple', 'slack'];
+  const allServices = ['google', 'microsoft', 'whatsapp', 'slack'];
   
   let integrationsHtml = '';
   
